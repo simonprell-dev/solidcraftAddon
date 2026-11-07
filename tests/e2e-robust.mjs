@@ -148,6 +148,7 @@ try {
         () => document.querySelector('.sk-panel .sk-title')?.textContent === 'Bewundere dein Schild',
         {timeout: 5000}).then(() => true, () => false);
     log(synced, 'Zweiter Tab übernimmt den Fortschritt');
+    if (!synced) console.log('  Tab 2:', await page2.evaluate(() => JSON.stringify({title: document.querySelector('.sk-panel .sk-title')?.textContent, panel: !!document.querySelector('.sk-panel'), display: document.querySelector('.sk-panel')?.style.display, state: window.SolidcraftKurs && {open: window.SolidcraftKurs.state.open, ch: window.SolidcraftKurs.state.chapterId, step: window.SolidcraftKurs.state.step, view: window.SolidcraftKurs.run.view}, stored: JSON.parse(localStorage.getItem('solidcraft-kurs:v1') || '{}').step})));
     await page2.close();
 
     // 7) Pokal-Ansicht übersteht Ein- und Ausklappen.
@@ -184,6 +185,27 @@ try {
         if (await page.$('.sk-ring')) ringSeen = true;
     }
     log(!ringSeen, 'Nach ✕ keine Hand mehr');
+
+    // 10) Mitten in einem Schritt zurück und wieder vor: Gezeichnetes zählt weiter, die Hand
+    //     springt nicht zurück auf „Neue Skizze“. Dazu ein neues Design (der Kurs sagt das so).
+    await page.evaluate(() => {
+        window.SolidcraftKurs.state.open = true;
+        window.SolidcraftKurs.openChapter(1, 1);   // Schlüsselanhänger: Die Grundplatte
+    });
+    await call('ui.documents', {action: 'new'}).catch(() => null);
+    await wait(1500);
+    await ex('sketch.create', {plane: 'XY'});
+    await ex('sketch.rectangle.two_point', {p0: [-25, -12], p1: [25, 12]});
+    const drawnBefore = await page.waitForFunction(() => document.querySelector('.sk-task')?.classList.contains('sk-task-done'),
+        {timeout: 6000}).then(() => true, () => false);
+    await page.click('.sk-footer .sk-btn-secondary'); // ←
+    await wait(600);
+    await clickNext();
+    await wait(1200);
+    const stillDone = await page.$eval('.sk-task', li => li.classList.contains('sk-task-done')).catch(() => false);
+    const hintNow = await page.$eval('.sk-bubble', e => e.textContent).catch(() => null);
+    log(drawnBefore && stillDone && hintNow !== 'Klicke auf „Neue Skizze“',
+        `Zurück und vor mitten im Schritt: Rechteck zählt weiter (Hinweis: „${hintNow}“)`);
 } catch (e) {
     failures++;
     console.log('✖ Abbruch:', e.message);

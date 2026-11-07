@@ -50,7 +50,6 @@
     const newest = c => c.bodies()[c.bodies().length - 1] || null;
 
     // Fortschritt beim Skizzieren – seit Schrittbeginn.
-    const started = c => c.inSketch() || c.newSketches() >= 1;
     const profileDrawn = c => newSketchList(c).some(s => s.profiles >= 1);
     const circleOnFace = c => newSketchList(c).some(s => s.profiles >= 2);   // Flächenumriss + Kreis
 
@@ -64,9 +63,14 @@
         const d = dims(b);
         return Math.min(...d) >= 8 && Math.max(...d) <= Math.min(...d) * 1.3;
     });
-    const pips = c => c.faceCount('cylinder') + c.faceCount('sphere');
-    const cylinderDone = c => !c.inSketch() && c.faceCount('cylinder') >= 1 && Math.max(...dims(c.largest())) >= 40;
+    // Augen = Kreise in den Seiten-Skizzen (Flächenumriss + je ein Profil pro Kreis) – zählt nur,
+    // wenn schon etwas ausgeschnitten wurde. Unabhängig von Rundungen (die bringen Zylinderflächen mit).
+    const pips = c => c.volume() < c.base.volume ?
+        c.sketches().reduce((n, s) => n + Math.max(0, (s.profiles || 0) - 1), 0) : 0;
+    const cylinderDone = c => !c.inSketch() && c.faceCount('cylinder') >= 1 && dims(c.largest())[2] >= 40;
     const shelled = c => c.newFeatures('ShellFeature') >= 1;
+    const boxHigh = c => !c.inSketch() && c.bodyCount() >= 1 && Math.min(...dims(c.largest())) >= 15;
+    const rimDone = c => !c.inSketch() && c.newFeatures('ExtrudeFeature') >= 1 && c.volume() > c.base.volume + 100;
     const newBody = c => !c.inSketch() && c.bodyCount() > c.base.bodyCount;
     const combined = c => c.newFeatures('CombineFeature') >= 1 || (c.base.bodyCount >= 2 && c.bodyCount() < c.base.bodyCount);
     const revolved = c => c.newFeatures('RevolveFeature') >= 1;
@@ -74,7 +78,6 @@
 
     // Ziele im Modell – berechnet aus den Maßen der Körper.
     const zTop = c => world(c.top(2));
-    const longTop = c => world(c.top('long'));
     // Eine Kante an einer Ecke (senkrecht zur dünnsten Richtung, bei der Platte die kurze Eckkante).
     const cornerEdge = c => {
         const b = c.largest();
@@ -92,14 +95,12 @@
         t[long] = b.bbox.min[long] + 0.18 * dims(b)[long];
         return world(t);
     };
-    // Obere Außenkante eines stehenden Körpers (Köcher).
+    // Obere Außenkante eines stehenden Körpers (Köcher, auf der Bodenebene gebaut).
     const rimEdge = c => {
         const b = c.largest();
-        const t = c.top('long');
+        const t = c.top(2);
         if (!b || !t) return 'viewport';
-        const long = argmax(dims(b));
-        const side = [0, 1, 2].find(i => i !== long);
-        t[side] = b.bbox.max[side];
+        t[0] = b.bbox.max[0];
         return world(t);
     };
     // Oberseite des zuletzt gebauten Körpers (Deckel).
@@ -114,13 +115,15 @@
 
     // Hinweis-Kette: Neue Skizze → Ebene/Fläche → Werkzeug → zeichnen → Skizze beenden.
     // done: das Ergebnis des ganzen Schritts – dann ist die Kette vorbei, egal wie das Kind hinkam.
-    function sketchHints ({plane, planeText, tool, toolText, drawTarget = 'viewport', drawText, drawn = profileDrawn, done}) {
+    // Wer eine Skizze ohne Zeichnung verlässt, wird wieder zu „Neue Skizze“ geführt.
+    function sketchHints ({plane, planeText, tool, toolText, search, drawTarget = 'viewport', drawText, drawn = profileDrawn, done}) {
         const family = tool.slice(5).split('.').slice(0, 2).join('.');   // sketch.rectangle, sketch.circle …
+        const started = c => c.inSketch() || drawn(c);
         return [
             {target: 'tool:sketch.create', text: 'Klicke auf „Neue Skizze“',
                 done: c => c.dialog() === 'sketch.create' || started(c) || done(c)},
             {target: plane, text: planeText, done: c => started(c) || done(c)},
-            {target: tool, text: toolText, done: c => (c.tool() || '').startsWith(family) || drawn(c) || done(c)},
+            {target: tool, search, text: toolText, done: c => (c.tool() || '').startsWith(family) || drawn(c) || done(c)},
             {target: drawTarget, text: drawText, done: c => drawn(c) || done(c)},
             {target: 'tool:sketch.finish', text: 'Klicke auf „Skizze beenden“', done: c => (drawn(c) && !c.inSketch()) || done(c)}
         ];
@@ -495,9 +498,11 @@
                     ],
                     hints: [
                         {target: 'tool:sketch.create', text: 'Neue Skizze auf der nächsten Seite',
-                            done: c => c.inSketch() || c.dialog() === 'sketch.create'},
+                            done: c => c.inSketch() || c.dialog() === 'sketch.create' || pips(c) >= 21},
+                        {target: 'viewport', text: 'Klicke auf die nächste Seite',
+                            done: c => c.inSketch() || c.dialog() !== 'sketch.create' || pips(c) >= 21},
                         {target: 'tool:sketch.circle.center', text: 'Kreise zeichnen',
-                            done: c => !c.inSketch() || c.tool() === 'sketch.circle.center'}
+                            done: c => !c.inSketch() || c.tool() === 'sketch.circle.center' || pips(c) >= 21}
                     ]
                 },
                 {
@@ -516,8 +521,8 @@
                             done: c => ['solid.chamfer', 'solid.fillet'].includes(c.dialog()) || edgesBroken(c)},
                         {target: cornerEdge, text: 'Klicke die Kanten an',
                             done: c => c.dialogPicked('Edges') > 0 || !['solid.chamfer', 'solid.fillet'].includes(c.dialog()) || edgesBroken(c)},
-                        {target: 'dialog:Distance', text: 'Tippe 1 ein, dann OK',
-                            done: c => edgesBroken(c) || c.dialog() !== 'solid.chamfer'}
+                        {target: c => c.dialog() === 'solid.fillet' ? 'dialog:Radius' : 'dialog:Distance', text: 'Tippe 1 ein, dann OK',
+                            done: c => edgesBroken(c) || !['solid.chamfer', 'solid.fillet'].includes(c.dialog())}
                     ]
                 },
                 {
@@ -589,7 +594,7 @@
                     ],
                     hints: [
                         {target: 'tool:solid.shell', text: 'Klicke auf „Hülle“', done: c => c.dialog() === 'solid.shell' || shelled(c)},
-                        {target: longTop, text: 'Klicke auf die Oberseite',
+                        {target: zTop, text: 'Klicke auf die Oberseite',
                             done: c => c.dialogPicked('Faces/Body') > 0 || c.dialog() !== 'solid.shell' || shelled(c)},
                         {target: 'dialog:Thickness', text: 'Tippe 2 ein, dann OK', done: c => shelled(c) || c.dialog() !== 'solid.shell'}
                     ]
@@ -598,7 +603,7 @@
                     kind: 'learn',
                     title: 'Den Rand abrunden',
                     text: '<p>Der obere Rand ist scharf. Klicke auf <b>Vollrundung</b> und dann auf die <b>äußere obere Kante</b>. ' +
-                        'Tippe bei <b>Radius</b> eine <b>1</b> ein – mehr geht nicht, die Wand ist ja nur 2 mm dick.</p>',
+                        'Tippe bei <b>Radius</b> eine <b>1</b> ein – mehr wäre zu viel, die Wand ist ja nur 2 mm dick.</p>',
                     tasks: [{text: 'Runde den Rand ab', check: filleted}],
                     hints: [
                         {target: 'tool:solid.fillet', text: 'Klicke auf „Vollrundung“', done: c => c.dialog() === 'solid.fillet' || filleted(c)},
@@ -692,14 +697,14 @@
                         '<p>Höhle es mit <b>Hülle</b> aus: Oberseite anklicken, <b>Dicke 2</b>. Die Öffnung ist jetzt innen ' +
                         '<b>56 × 36 mm</b> groß (60 − 2 × 2 und 40 − 2 × 2).</p>',
                     tasks: [
-                        {text: 'Box mindestens 15 mm hoch', check: c => !c.inSketch() && c.bodyCount() >= 1 && Math.min(...dims(c.largest())) >= 15},
+                        {text: 'Box mindestens 15 mm hoch', check: boxHigh},
                         {text: 'Box ausgehöhlt', check: shelled}
                     ],
                     hints: [
                         ...sketchHints({plane: 'plane:XY', planeText: 'Klicke auf die Bodenebene',
                             tool: 'tool:sketch.rectangle.two_point', toolText: 'Klicke auf „Rechteck“',
-                            drawText: '60 × 40 mm', done: c => c.bodyCount() >= 1}),
-                        ...extrudeHints({text: 'Tippe 30 ein, dann OK', done: c => c.bodyCount() >= 1}),
+                            drawText: '60 × 40 mm', done: boxHigh}),
+                        ...extrudeHints({text: 'Tippe 30 ein, dann OK', done: boxHigh}),
                         {target: 'tool:solid.shell', text: 'Klicke auf „Hülle“', done: c => c.dialog() === 'solid.shell' || shelled(c)},
                         {target: 'dialog:Thickness', text: 'Oberseite klicken, Dicke 2, OK', done: c => shelled(c) || c.dialog() !== 'solid.shell'}
                     ]
@@ -725,17 +730,16 @@
                         '<p>Öffnung 56 × 36 mm, minus 2 × 0,2 mm Spiel = <b>55,6 × 35,6 mm</b>.</p>' +
                         '<p>Starte eine <b>Neue Skizze</b> auf der Deckelplatte und zeichne ein Rechteck in diesem Maß – ' +
                         'mittig, mit <b>Rechteck vom Mittelpunkt</b> geht es am leichtesten. Extrudiere es <b>3 mm</b> mit ' +
-                        '<b>Verbinden</b>. Zum Drucken drehst du den Deckel später einfach um.</p>',
+                        '<b>Verbinden</b>. Gedruckt wird der Deckel so, wie er daliegt – zum Aufsetzen drehst du ihn einfach um.</p>',
                     tasks: [
-                        {text: 'Rand auf den Deckel gebaut', check: c => !c.inSketch() && c.newFeatures('ExtrudeFeature') >= 1 && c.volume() > c.base.volume + 100},
+                        {text: 'Rand auf den Deckel gebaut', check: rimDone},
                         {text: 'Ich habe nachgerechnet: Rand = Öffnung − 0,4 mm', manual: true}
                     ],
                     hints: [
-                        {target: 'tool:sketch.create', text: 'Klicke auf „Neue Skizze“', done: c => c.inSketch() || c.newSketches() >= 1},
-                        {target: lidTop, text: 'Klicke auf die Deckelplatte', done: c => c.inSketch() || c.newSketches() >= 1},
-                        {target: 'tool:sketch.rectangle.center', search: 'Rechteck vom Mittelpunkt', text: '„Rechteck vom Mittelpunkt“',
-                            done: c => /^sketch\.rectangle/.test(c.tool() || '') || !c.inSketch()},
-                        {target: 'tool:sketch.finish', text: '55,6 × 35,6 – dann beenden', done: c => !c.inSketch()}
+                        ...sketchHints({plane: lidTop, planeText: 'Klicke auf die Deckelplatte',
+                            tool: 'tool:sketch.rectangle.center', search: 'Rechteck vom Mittelpunkt', toolText: '„Rechteck vom Mittelpunkt“',
+                            drawText: 'Mitte, dann 55,6 × 35,6', done: rimDone}),
+                        ...extrudeHints({pickText: 'Klicke in das Rechteck', text: 'Abstand 3, „Verbinden“, OK', done: rimDone})
                     ]
                 },
                 {
@@ -775,25 +779,25 @@
                         '<p>Neu lernst du:</p>' +
                         '<ul><li><b>Linie</b> – Formen Punkt für Punkt zeichnen</li>' +
                         '<li><b>Drehen</b> – ein Profil um eine Achse drehen</li>' +
-                        '<li><b>Kreisförmiges Muster</b> – ein Teil mehrmals im Kreis verteilen</li></ul>' +
+                        '<li><b>Radiales Muster</b> – ein Teil mehrmals im Kreis verteilen</li></ul>' +
                         '<p>Die Hand hilft, wenn du auf <b>👆 Zeig mir wie</b> drückst.</p>'
                 },
                 {
                     kind: 'learn',
                     title: 'Die halbe Rakete',
                     text: '<p>Starte eine <b>Neue Skizze</b> auf der <b>Frontebene</b> (die senkrechte Ebene, XZ).</p>' +
-                        '<p>Zeichne mit <b>Linie</b> die rechte Hälfte der Rakete – Punkt für Punkt, vom Mittelpunkt aus: ' +
+                        '<p>Zeichne mit <b>Linie</b> die rechte Hälfte der Rakete – Punkt für Punkt, vom <b>Nullpunkt</b> aus: ' +
                         '10 mm nach rechts, 50 mm nach oben, schräg zur Spitze zurück auf die Mittellinie (20 mm höher) ' +
-                        'und wieder hinunter zum Start. Die Form muss <b>geschlossen</b> sein. Dann <b>Skizze beenden</b>.</p>',
+                        'und wieder hinunter zum Start. Die Form muss <b>geschlossen</b> sein – dann wird sie innen farbig. ' +
+                        'Dann <b>Skizze beenden</b>.</p>',
                     tasks: [
                         {text: 'Zeichne die geschlossene halbe Form', check: profileDrawn},
-                        {text: 'Beende die Skizze', check: c => !c.inSketch() && c.newSketches() >= 1}
+                        {text: 'Beende die Skizze', check: c => profileDrawn(c) && !c.inSketch()}
                     ],
                     hints: [
                         ...sketchHints({plane: 'plane:XZ', planeText: 'Klicke auf die Frontebene',
                             tool: 'tool:sketch.line', toolText: 'Klicke auf „Linie“',
-                            drawText: 'Punkt für Punkt klicken', done: c => !c.inSketch() && c.newSketches() >= 1}),
-                        {target: 'tool:sketch.finish', text: 'Klicke auf „Skizze beenden“', done: c => !c.inSketch()}
+                            drawText: 'Punkt für Punkt klicken', done: c => profileDrawn(c) && !c.inSketch()})
                     ]
                 },
                 {
@@ -802,7 +806,7 @@
                     text: '<p>Klicke auf <b>Drehen</b>. Wähle dein Profil (in die Form klicken) und als <b>Achse</b> die ' +
                         'blaue <b>Z-Achse</b> – die senkrechte Mittellinie. Klicke auf <b>OK</b>.</p>' +
                         '<p>Aus der halben Form wird ein runder Raketenrumpf! Hängt sie im Modell <b>kopfüber</b>? ' +
-                        'Das ist kein Fehler – SolidCraft zählt auf der Frontebene von oben nach unten. ' +
+                        'Das ist kein Fehler – auf der Frontebene zeigt die Skizze in SolidCraft nach unten. ' +
                         'Im Druckprogramm stellst du sie einfach richtig herum hin.</p>',
                     tasks: [
                         {text: 'Wähle „Drehen“', check: c => c.dialog() === 'solid.revolve' || revolved(c)},
@@ -819,7 +823,8 @@
                     kind: 'learn',
                     title: 'Eine Flosse',
                     text: '<p>Starte wieder eine <b>Neue Skizze</b> auf der Frontebene und zeichne mit <b>Linie</b> ein ' +
-                        '<b>Dreieck</b> unten rechts am Rumpf – es soll den Rumpf ein kleines bisschen berühren.</p>' +
+                        '<b>Dreieck</b> rechts am Rumpf, dort wo du mit der halben Rakete angefangen hast. Das Dreieck soll ' +
+                        '<b>etwa 1 mm in den Rumpf hineinragen</b> – sonst hält die Flosse nach dem Drucken nicht.</p>' +
                         '<p>Extrudiere es <b>2 mm</b>: Stell die <b>Richtung</b> auf <b>Symmetrisch</b> und die ' +
                         '<b>Operation</b> auf <b>Neuer Körper</b>.</p>',
                     tasks: [{text: 'Flosse als neuer Körper', check: newBody}],
@@ -834,12 +839,12 @@
                 {
                     kind: 'learn',
                     title: 'Drei Flossen',
-                    text: '<p>Eine Flosse reicht nicht. Suche oben nach <b>Kreisförmiges Muster</b>. Wähle als <b>Objekte</b> ' +
+                    text: '<p>Eine Flosse reicht nicht. Suche oben nach <b>Radiales Muster</b>. Wähle als <b>Objekte</b> ' +
                         'deine Flosse, als <b>Achse</b> die Z-Achse und stell die <b>Anzahl</b> auf <b>3</b>. <b>OK</b> – ' +
                         'schon sind es drei Flossen, schön gleichmäßig verteilt.</p>',
                     tasks: [{text: 'Drei Flossen im Kreis', check: patterned}],
                     hints: [
-                        {target: 'tool:solid.pattern.circular', search: 'Kreisförmiges Muster', text: 'Suche „Kreisförmiges Muster“',
+                        {target: 'tool:solid.pattern.circular', search: 'Radiales Muster', text: 'Suche „Radiales Muster“',
                             done: c => c.dialog() === 'solid.pattern.circular' || patterned(c)},
                         {target: 'dialog:Objects', text: 'Klicke die Flosse an',
                             done: c => c.dialogPicked('Objects') > 0 || c.dialog() !== 'solid.pattern.circular' || patterned(c)},

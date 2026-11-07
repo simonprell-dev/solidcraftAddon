@@ -35,7 +35,7 @@
 
     function defaultState () {
         return {started: false, open: false, collapsed: false, chapterId: chapters[0].id, step: 0,
-            done: {}, manual: {}, pos: null, transition: null, bases: {}, chapterBodies: {}};
+            done: {}, manual: {}, pos: null, transition: null, bases: {}, chapterBodies: {}, nav: 0};
     }
     function loadState () {
         let loaded = defaultState();
@@ -46,11 +46,27 @@
         loaded.step = Math.min(Math.max(0, loaded.step || 0), chapters[loaded.chapter].steps.length - 1);
         return loaded;
     }
+    const NAV_FIELDS = ['chapterId', 'step', 'transition', 'nav', 'started', 'level'];
+
     function saveState () {
         state.chapterId = chapters[state.chapter].id;
         try {
-            const {chapter, ...stored} = state;
-            localStorage.setItem(STATE_KEY, JSON.stringify(stored));
+            const {chapter, ...mine} = state;
+            let other = null;
+            try {
+                other = JSON.parse(localStorage.getItem(STATE_KEY) || 'null');
+            } catch (e) { /* kaputt → überschreiben */ }
+            const out = {...mine};
+            // Direkt nach dem Zurücksetzen nichts aus anderen Tabs einmischen.
+            if (other && Date.now() - run.resetAt >= 3000) {
+                // Haken anderer Tabs nicht verlieren.
+                out.done = {...other.done, ...mine.done};
+                out.manual = {...other.manual, ...mine.manual};
+                // Ein anderer Tab ist weiter navigiert: dessen Navigation behalten (wir übernehmen sie
+                // gleich über das storage-Ereignis bzw. beim nächsten Laden).
+                if ((other.nav || 0) > (mine.nav || 0)) NAV_FIELDS.forEach(k => { out[k] = other[k]; });
+            }
+            localStorage.setItem(STATE_KEY, JSON.stringify(out));
         } catch (e) { /* egal */ }
     }
     const state = loadState();
@@ -58,7 +74,7 @@
     // ---------- Laufzeit des aktuellen Schritts ----------
 
     const run = {base: null, needBase: true, hintsOn: false, wasComplete: false, taskDone: [], view: state.transition ? 'transition' : 'step',
-        snap: null, at: new Map()};
+        snap: null, at: new Map(), baseDoc: null, resetAt: 0};
 
     const currentChapter = () => chapters[state.chapter];
     const currentStep = () => currentChapter().steps[state.step];
@@ -442,6 +458,7 @@
     }
 
     function go (delta) {
+        state.nav = (state.nav || 0) + 1;
         const cur = currentStep();
         if (delta > 0 && !(cur.tasks && cur.tasks.length)) state.done[stepId(state.chapter, state.step)] = true;
         if (delta > 0 && isLastStep()) {
@@ -461,6 +478,7 @@
     }
 
     function openChapter (ci, si) {
+        state.nav = (state.nav || 0) + 1;
         state.transition = null;
         state.chapter = ci;
         state.step = si;
@@ -697,18 +715,24 @@
         const snap = await A.snapshot();
         if (!snap) return;
         run.snap = snap;
+        // Anderes Design geöffnet (z. B. ein neues fürs nächste Kapitel) → Startzustand neu bestimmen.
+        if (!run.needBase && run.baseDoc !== snap.documentId) run.needBase = true;
         if (run.needBase) {
-            // Den Zustand bei Schrittbeginn merken – auch über ein Neuladen hinweg, solange es
-            // dasselbe Design ist. Sonst zählte z. B. eine schon angelegte Skizze nicht mehr als neu.
+            // Den Zustand bei Schrittbeginn merken – für jeden Schritt des Kapitels und über ein
+            // Neuladen hinweg, solange es dasselbe Design ist. So zählt eine schon gezeichnete Skizze
+            // auch nach „←“ und „Weiter →“ noch als neu.
             const id = stepId(state.chapter, state.step);
             const saved = state.bases[id];
             if (saved && saved.doc === snap.documentId) {
                 run.base = saved.base;
             } else {
                 run.base = C.makeBase(snap, chapterIgnore(snap));
-                state.bases = {[id]: {doc: snap.documentId, base: run.base}};
+                const prefix = `${currentChapter().id}.`;
+                const kept = Object.fromEntries(Object.entries(state.bases).filter(([k]) => k.startsWith(prefix)));
+                state.bases = {...kept, [id]: {doc: snap.documentId, base: run.base}};
                 saveState();
             }
+            run.baseDoc = snap.documentId;
             run.needBase = false;
             run.at.clear();
         }
@@ -746,12 +770,12 @@
         else clearOverlay();
     }
 
-    // Beim ersten Schritt eines Kapitels merken, welche Körper schon im Design liegen (z. B. vom
-    // vorigen Kapitel) – die Prüfungen des Kapitels sehen sie dann nicht.
+    // Beim ersten Kontakt eines Kapitels mit einem Design merken, welche Körper schon darin liegen
+    // (z. B. vom vorigen Kapitel) – die Prüfungen des Kapitels sehen sie dann nicht.
     function chapterIgnore (snap) {
         const id = currentChapter().id;
         let rec = state.chapterBodies[id];
-        if (state.step === 0 && (!rec || rec.doc !== snap.documentId)) {
+        if (!rec || rec.doc !== snap.documentId) {
             rec = {doc: snap.documentId, names: ((snap.doc && snap.doc.bodies) || []).map(b => b.name)};
             state.chapterBodies = {...state.chapterBodies, [id]: rec};
             saveState();
@@ -774,10 +798,20 @@
     // Ein anderer SolidCraft-Tab hat den Fortschritt gespeichert → hier übernehmen.
     window.addEventListener('storage', e => {
         if (e.key !== STATE_KEY || e.newValue === null) return;
+        if (Date.now() - run.resetAt < 3000) return;
         const before = `${state.chapterId}|${state.step}|${state.transition}`;
+        const local = {pos: state.pos, open: state.open, collapsed: state.collapsed};
         const loaded = loadState();
+        const merged = {done: {...state.done, ...loaded.done}, manual: {...state.manual, ...loaded.manual}};
+        if ((loaded.nav || 0) < (state.nav || 0)) {
+            // Veralteter Stand aus einem anderen Tab: nur die Haken übernehmen.
+            Object.assign(state, merged);
+            lastResultsKey = '';
+            renderPanel();
+            return;
+        }
         Object.keys(state).forEach(key => delete state[key]);
-        Object.assign(state, loaded);
+        Object.assign(state, loaded, local, merged);
         if (`${state.chapterId}|${state.step}|${state.transition}` === before) {
             // Nur Haken oder Fensterlage geändert: neu zeichnen, nichts speichern.
             lastResultsKey = '';
@@ -796,6 +830,7 @@
         } catch (e) { /* egal */ }
         Object.keys(state).forEach(key => delete state[key]);
         Object.assign(state, loadState());
+        run.resetAt = Date.now();
         run.needBase = true;
         run.view = 'step';
         lastResultsKey = '';

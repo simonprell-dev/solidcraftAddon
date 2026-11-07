@@ -5,7 +5,7 @@
 ### Neu
 - Kapitel 2 „Schlüsselanhänger“ (Vollrundung, Bohrung), 3 „Spielwürfel“ (Kreis, Ausschneiden,
   Abschrägung, 21 Augen), 4 „Stifteköcher“ (Hülle, Neuer Körper, Kombinieren), 5 „Box mit Deckel“
-  (zwei Teile mit Spiel), 6 „Rakete“ (Linie, Drehen, Kreisförmiges Muster) – zusammen 50 Schritte
+  (zwei Teile mit Spiel), 6 „Rakete“ (Linie, Drehen, Radiales Muster) – zusammen 50 Schritte
 - Stufen starten bei Kapitel 1, 3 und 5
 - Hand zeigt auf Kanten, Bohrstellen, die gezeichnete Skizze und die Z-Achse; Werkzeuge in
   Aufklappern über die Befehlssuche

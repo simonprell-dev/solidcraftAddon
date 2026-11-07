@@ -21,7 +21,7 @@ Sie funktioniert wie der [Einführungskurs für Scratch](https://simonprell-dev.
 | 3 | 🎲 Spielwürfel | Schon mal ausprobiert | Kreis, Ausschneiden, Abschrägung | 8 |
 | 4 | ✏️ Stifteköcher | Schon mal ausprobiert | Hülle, Neuer Körper, Kombinieren | 9 |
 | 5 | 📦 Box mit Deckel | Ich kenne mich aus | zwei Teile, Spiel/Toleranz | 7 |
-| 6 | 🚀 Rakete | Ich kenne mich aus | Linie, Drehen, Kreisförmiges Muster | 9 |
+| 6 | 🚀 Rakete | Ich kenne mich aus | Linie, Drehen, Radiales Muster | 9 |
 
 Zusammen 6 Kapitel mit 50 Schritten. Die Stufen starten bei Kapitel 1, 3 bzw. 5 – alle Kapitel bleiben jederzeit erreichbar.
 
