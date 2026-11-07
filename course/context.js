@@ -10,7 +10,8 @@
  *   c.newSketches()   Anzahl Skizzen, die es bei Schrittbeginn noch nicht gab
  *   c.bodies()        alle Körper (mit bbox {min, max} in mm)
  *   c.size(body)      [Länge, Breite, Höhe] in mm (Länge ≥ Breite, Höhe = z)
- *   c.height()        Höhe aller Körper zusammen (z-Ausdehnung) in mm
+ *   c.height()        Dicke aller Körper zusammen in mm (entlang ihrer dünnsten Richtung –
+ *                     so zählt auch eine Platte, die auf der Front- oder Seitenebene steht)
  *   c.top()           Mittelpunkt der Oberseite aller Körper [x, y, z] oder null
  *   c.features(type)  Anzahl Elemente der Zeitleiste mit diesem Typ ('Sketch', 'ExtrudeFeature' …)
  *   c.cameraMoved()   wurde die Ansicht seit Schrittbeginn gedreht, verschoben oder gezoomt?
@@ -31,12 +32,28 @@
         return {min, max};
     }
 
+    // Die Platte kann auf jeder Ebene liegen (XY, XZ, YZ – z. B. wenn die Ansicht gedreht war).
+    // Ihre „Höhe“ ist deshalb die Ausdehnung entlang der dünnsten Richtung aller Körper.
+    function thinAxis (box) {
+        const d = [0, 1, 2].map(i => box.max[i] - box.min[i]);
+        return d.indexOf(Math.min(...d));
+    }
+
     function parts (snap) {
         const doc = (snap && snap.doc) || {};
         const ui = (snap && snap.ui) || {};
         const bodies = (doc.bodies || []).filter(b => b.visible !== false);
         const box = boxOf(bodies);
-        return {doc, ui, bodies, box, height: box ? box.max[2] - box.min[2] : 0};
+        const axis = box ? thinAxis(box) : 2;
+        return {doc, ui, bodies, box, axis, height: box ? box.max[axis] - box.min[axis] : 0};
+    }
+
+    // Mitte der Oberseite: auf der dünnen Achse die Seite, die weiter von der Skizzenebene
+    // (Koordinate 0) entfernt ist – dorthin wurde extrudiert.
+    function topOf (box, axis) {
+        const p = [0, 1, 2].map(i => (box.min[i] + box.max[i]) / 2);
+        p[axis] = Math.abs(box.max[axis]) >= Math.abs(box.min[axis]) ? box.max[axis] : box.min[axis];
+        return p.map(v => v + 0); // -0 → 0
     }
 
     function makeBase (snap) {
@@ -57,7 +74,7 @@
     }
 
     function make (snap, base) {
-        const {doc, ui, bodies, box, height} = parts(snap);
+        const {doc, ui, bodies, box, axis, height} = parts(snap);
         const sketches = doc.sketches || [];
         base = base || makeBase(snap);
         return {
@@ -79,7 +96,7 @@
                 return [Math.max(d[0], d[1]), Math.min(d[0], d[1]), d[2]];
             },
             height: () => height,
-            top: () => box ? [(box.min[0] + box.max[0]) / 2, (box.min[1] + box.max[1]) / 2, box.max[2]] : null,
+            top: () => box ? topOf(box, axis) : null,
             features: type => (doc.timeline || []).filter(f => f.type === type && !f.suppressed).length,
             cameraMoved: () => cameraDiffers(ui.camera, base.camera),
             has: name => !!(snap && snap.handles && snap.handles.has(name))

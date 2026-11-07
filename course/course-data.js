@@ -68,14 +68,14 @@
                     kind: 'learn',
                     title: 'Eine Skizze starten',
                     text: '<p>Jedes 3D-Teil beginnt mit einer <b>Skizze</b>: einer flachen Zeichnung auf einer Ebene.</p>' +
-                        '<p>Klicke oben auf <b>Skizze erstellen</b>. Danach wählst du die Ebene, auf der du zeichnest – ' +
+                        '<p>Klicke oben auf <b>Neue Skizze</b>. Danach wählst du die Ebene, auf der du zeichnest – ' +
                         'nimm die flache <b>Bodenebene</b> (sie heißt <b>XY</b>).</p>',
                     tasks: [
-                        {text: 'Klicke auf „Skizze erstellen“', check: c => c.dialog() === 'sketch.create' || c.inSketch()},
+                        {text: 'Klicke auf „Neue Skizze“', check: c => c.dialog() === 'sketch.create' || c.inSketch()},
                         {text: 'Wähle die Bodenebene (XY)', check: c => c.inSketch()}
                     ],
                     hints: [
-                        {target: 'tool:sketch.create', text: 'Klicke auf „Skizze erstellen“',
+                        {target: 'tool:sketch.create', text: 'Klicke auf „Neue Skizze“',
                             done: c => c.dialog() === 'sketch.create' || c.inSketch()},
                         {target: 'plane:XY', text: 'Klicke auf die Bodenebene', done: c => c.inSketch()}
                     ]
@@ -83,18 +83,18 @@
                 {
                     kind: 'learn',
                     title: 'Ein Rechteck zeichnen',
-                    text: '<p>Jetzt zeichnest du die Form des Schilds. Wähle <b>2-Punkt-Rechteck</b> und klicke ' +
+                    text: '<p>Jetzt zeichnest du die Form des Schilds. Wähle <b>Rechteck</b> und klicke ' +
                         'erst eine Ecke, dann die gegenüberliegende Ecke.</p>' +
                         '<p>Ein guter Vorschlag ist <b>80 × 30 mm</b>. Während du ziehst, zeigt SolidCraft die Maße an. ' +
                         'Du kannst sie direkt eintippen – mit der <b>Tab</b>-Taste wechselst du zwischen Breite und Höhe. ' +
                         'Größer oder kleiner geht aber auch!</p>',
                     tasks: [
-                        {text: 'Wähle „2-Punkt-Rechteck“',
+                        {text: 'Wähle „Rechteck“',
                             check: c => /^sketch\.rectangle/.test(c.tool() || '') || !!(c.activeSketch() && c.activeSketch().profiles >= 1)},
                         {text: 'Zeichne das Rechteck', check: c => !!(c.activeSketch() && c.activeSketch().profiles >= 1)}
                     ],
                     hints: [
-                        {target: 'tool:sketch.rectangle.two_point', text: 'Klicke auf „2-Punkt-Rechteck“',
+                        {target: 'tool:sketch.rectangle.two_point', text: 'Klicke auf „Rechteck“',
                             done: c => /^sketch\.rectangle/.test(c.tool() || '') || !!(c.activeSketch() && c.activeSketch().profiles >= 1)},
                         {target: 'viewport', text: 'Klicke zwei Ecken',
                             done: c => !!(c.activeSketch() && c.activeSketch().profiles >= 1)}
@@ -125,7 +125,7 @@
                     title: 'Deinen Namen schreiben',
                     text: '<p>Jetzt kommt dein Name aufs Schild. Dafür brauchst du eine neue Skizze – diesmal ' +
                         'direkt <b>auf der Oberseite</b> der Platte.</p>' +
-                        '<p>Klicke auf <b>Skizze erstellen</b> und dann auf die Oberseite. Wähle das Werkzeug <b>Text</b>, ' +
+                        '<p>Klicke auf <b>Neue Skizze</b> und dann auf die Oberseite. Wähle das Werkzeug <b>Text</b>, ' +
                         'klicke auf die Platte, wo dein Name anfangen soll, und tippe deinen Namen.</p>' +
                         '<p>Tipp: Eine Schrifthöhe von etwa <b>12 mm</b> passt gut auf ein 80 mm langes Schild.</p>',
                     tasks: [
@@ -134,7 +134,7 @@
                         {text: 'Schreibe deinen Namen', check: textSketch}
                     ],
                     hints: [
-                        {target: 'tool:sketch.create', text: 'Klicke auf „Skizze erstellen“',
+                        {target: 'tool:sketch.create', text: 'Klicke auf „Neue Skizze“',
                             done: c => c.dialog() === 'sketch.create' || c.newSketches() >= 1},
                         {target: topTarget, text: 'Klicke auf die Oberseite der Platte', done: c => c.newSketches() >= 1},
                         {target: 'tool:sketch.text', text: 'Wähle „Text“', done: c => c.tool() === 'sketch.text' || textSketch(c)},

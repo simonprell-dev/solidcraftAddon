@@ -29,14 +29,14 @@ test('tool: ohne Button → erst das Panel aufklappen (deutscher Name)', () => {
     const r = T.resolve('tool:sketch.text', snap(['tab:SKETCH', 'panel:SKETCH:CREATE']), cmds);
     assert.equal(r.kind, 'via');
     assert.equal(r.target.name, 'panel:SKETCH:CREATE');
-    assert.match(r.text, /ERSTELLEN/);
+    assert.equal(r.text, "Klicke auf „Erstellen ▾“");
 });
 
 test('tool: ohne Button und Panel → erst den Tab öffnen (deutscher Name)', () => {
     const r = T.resolve('tool:sketch.text', snap(['tab:SKETCH']), cmds);
     assert.equal(r.kind, 'via');
     assert.equal(r.target.name, 'tab:SKETCH');
-    assert.match(r.text, /SKIZZE/);
+    assert.equal(r.text, "Öffne oben den Tab „Skizze“");
 });
 
 test('tab: und handle: zeigen auf das Handle', () => {

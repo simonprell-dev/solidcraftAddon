@@ -83,3 +83,29 @@ test('commands() liefert Map id → {tab, panel, label} und fragt nur einmal', a
     assert.deepEqual(m.get('solid.extrude'), {tab: 'SOLID', panel: 'CREATE', label: 'Extrude'});
     assert.equal(api.calls.filter(c => c === 'commands').length, 1);
 });
+
+test('document.inspect neu, wenn Werkzeug oder Dialog wechseln (Revision hinkt nach)', async () => {
+    const ui = {tool: 'sketch.rectangle.two_point', dialog: null, viewport: [0, 0, 1, 1]};
+    const api = fakeApi({'ui.inspect': ui});
+    const a = access({solidcraft: api});
+    await a.snapshot();
+    ui.tool = null; // z. B. „Skizze beenden“ – document.revision bleibt gleich
+    await a.snapshot();
+    assert.equal(api.calls.filter(m => m === 'document.inspect').length, 2);
+    ui.dialog = {command: 'solid.extrude'};
+    await a.snapshot();
+    assert.equal(api.calls.filter(m => m === 'document.inspect').length, 3);
+});
+
+test('document.inspect spätestens nach einer Sekunde neu', async t => {
+    t.mock.timers.enable({apis: ['Date'], now: 0});
+    const api = fakeApi();
+    const a = access({solidcraft: api});
+    await a.snapshot();
+    t.mock.timers.tick(500);
+    await a.snapshot();
+    assert.equal(api.calls.filter(m => m === 'document.inspect').length, 1);
+    t.mock.timers.tick(600);
+    await a.snapshot();
+    assert.equal(api.calls.filter(m => m === 'document.inspect').length, 2);
+});

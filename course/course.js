@@ -314,7 +314,8 @@
         panel.appendChild(body);
         if (run.view === 'step') panel.appendChild(renderFooter(step));
         if (run.view === 'transition') panel.appendChild(renderTransitionFooter());
-        if (!A.ready()) panel.appendChild(el('div', 'sk-loading', 'SolidCraft lädt noch …'));
+        wasReady = A.ready();
+        if (!wasReady) panel.appendChild(el('div', 'sk-loading', 'SolidCraft lädt noch …'));
         clampPanel();
         lastHintKey = '';
         lastResultsKey = '';
@@ -425,6 +426,8 @@
     }
 
     function go (delta) {
+        const cur = currentStep();
+        if (delta > 0 && !(cur.tasks && cur.tasks.length)) state.done[stepId(state.chapter, state.step)] = true;
         if (delta > 0 && isLastStep()) {
             state.done[stepId(state.chapter, state.step)] = true;
             showChapterDone();
@@ -636,7 +639,12 @@
             shield(launcher);
             document.body.appendChild(launcher);
         }
-        launcher.innerHTML = `<span class="sk-launcher-icon">🎓</span><span>${state.started ? 'Kurs öffnen' : '3D-Kurs starten'}</span>`;
+        // Nur bei geänderter Beschriftung neu setzen – sonst verschluckt der Austausch Klicks.
+        const label = state.started ? 'Kurs öffnen' : '3D-Kurs starten';
+        if (launcher.dataset.label !== label) {
+            launcher.dataset.label = label;
+            launcher.innerHTML = `<span class="sk-launcher-icon">🎓</span><span>${label}</span>`;
+        }
         launcher.style.display = show ? '' : 'none';
     }
 
@@ -661,11 +669,9 @@
             return;
         }
         if (!panel || !document.body.contains(panel)) renderPanel();
-        const ready = A.ready();
-        if (ready !== wasReady) {
-            wasReady = ready;
-            renderPanel();
-        }
+        // Nur neu aufbauen, wenn SolidCraft wirklich gerade fertig geladen hat – ein Neuaufbau
+        // ersetzt die Knöpfe und kann einen Klick verschlucken.
+        if (A.ready() !== wasReady) renderPanel();
         const snap = await A.snapshot();
         if (!snap) return;
         run.snap = snap;

@@ -14,11 +14,12 @@
 (function () {
     'use strict';
 
-    // Deutsche Beschriftungen der Oberfläche (assets/locales/de.json von SolidCraft).
-    const TAB_DE = {MODEL: 'MODELL', SKETCH: 'SKIZZE', SOLID: 'VOLUMENKÖRPER', ASSEMBLE: 'BAUGRUPPE',
-        INSPECT: 'PRÜFEN', INSERT: 'EINFÜGEN', VIEW: 'ANSICHT'};
-    const PANEL_DE = {CREATE: 'ERSTELLEN', MODIFY: 'ÄNDERN', ARRANGE: 'ANORDNEN', CONSTRUCT: 'KONSTRUIEREN',
-        CONSTRAIN: 'BEDINGUNGEN', PATTERN: 'MUSTER', INSPECT: 'PRÜFEN'};
+    // Beschriftungen, wie die deutsche Oberfläche sie zeigt (SolidCraft 0.30, geprüft per Screenshot).
+    const TAB_DE = {MODEL: 'Modell', SKETCH: 'Skizze', SURFACE: 'Fläche', ASSEMBLE: 'Zusammenbau',
+        INSERT: 'Einfügen', INSPECT: 'Prüfen', MANAGE: 'Verwalten', VIEW: 'Ansicht', 'SHEET METAL': 'Blech'};
+    const PANEL_DE = {CREATE: 'Erstellen', MODIFY: 'Ändern', ARRANGE: 'Anordnen', CONSTRUCT: 'Konstruktion',
+        CONFIGURE: 'Konfigurieren', CONSTRAIN: 'Abhängigkeiten', PATTERN: 'Muster', REFERENCE: 'Referenz',
+        INSPECT: 'Prüfen'};
 
     const tabName = t => TAB_DE[t] || t;
     const panelName = p => PANEL_DE[p] || p;

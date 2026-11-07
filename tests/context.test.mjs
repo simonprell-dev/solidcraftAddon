@@ -85,3 +85,30 @@ test('dialogPicked zählt die Auswahl eines Dialogfelds', () => {
     assert.equal(make(snap('doc-empty.json', {ui: {dialog}})).dialogPicked('Profiles'), 1);
     assert.equal(make(snap('doc-empty.json')).dialogPicked('Profiles'), 0);
 });
+
+// Platte auf der Frontebene (XZ): steht aufrecht, Dicke entlang -Y.
+function standingPlate (thickness) {
+    const doc = fixture('doc-plate.json');
+    doc.bodies[0].bbox = {min: [-40, -thickness, -15], max: [40, 0, 15]};
+    return doc;
+}
+
+test('aufrechte Platte (XZ-Ebene): Dicke entlang der dünnsten Richtung', () => {
+    const c = make(snap(standingPlate(3)));
+    assert.ok(c.approx(c.height(), 3, 0.01));
+});
+
+test('aufrechte Platte: Oberseite liegt auf der Seite weg von der Skizzenebene', () => {
+    const c = make(snap(standingPlate(3)));
+    assert.deepEqual(c.top(), [0, -3, 0]);
+});
+
+test('aufrechte Platte mit Text: Dicke wächst auf 5', () => {
+    const c = make(snap(standingPlate(5)), snap(standingPlate(3)));
+    assert.ok(c.approx(c.height(), 5, 0.01));
+    assert.ok(c.approx(c.base.height, 3, 0.01));
+});
+
+test('liegende Platte: Oberseite oben', () => {
+    assert.deepEqual(make(snap('doc-plate.json')).top().map(v => Math.round(v * 10) / 10), [0, 0, 3]);
+});
