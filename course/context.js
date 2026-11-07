@@ -3,6 +3,7 @@
  *
  *   c.tool()          Command-ID des aktiven Werkzeugs (z. B. 'sketch.text') oder null
  *   c.dialog()        Command-ID des offenen Dialogs (z. B. 'solid.extrude') oder null
+ *   c.dialogPicked(label)  wie viel ist im Dialogfeld gewählt (z. B. 'Profiles')?
  *   c.inSketch()      ist gerade eine Skizze offen?
  *   c.activeSketch()  die offene Skizze {id, name, curves, profiles, …} oder null
  *   c.sketches()      alle Skizzen
@@ -64,6 +65,10 @@
             approx,
             tool: () => ui.tool || null,
             dialog: () => (ui.dialog && ui.dialog.command) || null,
+            dialogPicked (label) {
+                const input = ui.dialog && (ui.dialog.inputs || []).find(i => i.label === label);
+                return input ? (input.items || []).length : 0;
+            },
             inSketch: () => doc.active_sketch != null,
             activeSketch: () => sketches.find(s => s.id === doc.active_sketch) || null,
             sketches: () => sketches,

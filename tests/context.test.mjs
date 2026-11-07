@@ -77,3 +77,11 @@ test('fehlendes doc bricht nichts', () => {
     assert.equal(c.height(), 0);
     assert.equal(c.newSketches(), 0);
 });
+
+test('dialogPicked zählt die Auswahl eines Dialogfelds', () => {
+    const dialog = {command: 'solid.extrude', inputs: [{active: true, items: [], label: 'Profiles'}]};
+    assert.equal(make(snap('doc-empty.json', {ui: {dialog}})).dialogPicked('Profiles'), 0);
+    dialog.inputs[0].items = [{type: 'profile'}];
+    assert.equal(make(snap('doc-empty.json', {ui: {dialog}})).dialogPicked('Profiles'), 1);
+    assert.equal(make(snap('doc-empty.json')).dialogPicked('Profiles'), 0);
+});
