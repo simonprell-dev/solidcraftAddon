@@ -119,3 +119,32 @@
 **Files:** `README.md` (Installation, Kursübersicht 6 Projekte, davon 1 fertig), `CHANGELOG.md`, `.claude/skills/kurs-kapitel/SKILL.md` + `references/api.md` (Ziele, Kontext, Bauregeln für Kapitel 2–6).
 
 - [ ] Step 1: Schreiben. Step 2: `npm test && npm run check` → PASS. Commit.
+
+---
+
+## Phase 2 (2026-11-07): Kleinigkeiten aus dem Review + Kapitel 2–6
+
+Live verifiziert (Spikes): Timeline-Typen `FilletFeature`, `ChamferFeature`, `HoleFeature`,
+`ShellFeature`, `RevolveFeature`, `CircularPatternFeature`, `MirrorFeature`, `BoxFeature`;
+`face_types` (cylinder/sphere/cone) und `volume_mm3` je Körper; `sketch.inspect` liefert
+`plane {origin, x_dir, y_dir}` und Kurven (öffnet kein Fenster); Ausschneiden-Extrusion auf einer
+Fläche braucht `direction: 'negative'` (API); Navigation „fusion“ mit `right_drag_orbits`;
+Taste A = Erscheinungsbild. Deutsche Labels: Vollrundung, Abschrägung, Hülle, Bohrung, Drehen,
+Spiegeln, Muster, Kombinieren, Kreis, Linie; Felder Abstand, Operation (Verbinden/Ausschneiden/
+Neuer Körper), Kanten, Radius, Durchmesser, Dicke, Achse, Anzahl, Zielkörper, Werkzeugkörper.
+
+### Task 9: Infrastruktur (TDD, Unit-Tests)
+- context: `c.newFeatures(type)`, `c.volume()`, `c.faceCount(type)`, `c.bodyCount()`,
+  `c.largest()`, `c.top('long')`, `c.sketchCenter()`, Körper vom Kapitelstart ignorieren
+  (`base.ignore`), Textskizze über Profile (≥ 2) statt Kurvenzahl.
+- access: `sketch.inspect` der neuesten Skizze bei jedem Modell-Neulesen (`snap.sketch`).
+- targets: `axis:Z`; `tool:`-Fallback über die Befehlssuche (`ribbon:search`) mit `search`-Text.
+
+### Task 10: Engine-Kleinigkeiten (E2E-robust)
+Pokal-Ansicht übersteht Ein-/Ausklappen; Übergangsansicht übersteht Neuladen; keine Hand nach ✕;
+Reset-Fallback ohne stillen Reset; Fortschritt zwischen Tabs (storage-Event); Kapitelstart-Körper.
+
+### Task 11: Kapitel 2–6 in course-data.js + `tests/e2e-chapters.mjs`
+2 Schlüsselanhänger (neuling), 3 Spielwürfel (probiert), 4 Stifteköcher (probiert),
+5 Box mit Deckel (profi), 6 Rakete (profi). Stufen-Einstieg: neuling→1, probiert→3, profi→5.
+E2E spielt jedes Kapitel per Befehl durch und prüft Haken + Hand pro Lern-Schritt.
