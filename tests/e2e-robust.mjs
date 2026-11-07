@@ -56,6 +56,16 @@ try {
         await page.waitForFunction(t => document.querySelector('.sk-panel .sk-title')?.textContent !== t, {timeout: 5000}, t);
     };
 
+    // 0) Start-Knopf reagiert auch, wenn der Browser kein „click“ meldet (nur Drücken + Loslassen).
+    await page.evaluate(() => {
+        const l = document.querySelector('.sk-launcher');
+        const r = l.getBoundingClientRect();
+        const opt = {bubbles: true, clientX: r.left + 10, clientY: r.top + 10, pointerId: 1, isPrimary: true};
+        l.dispatchEvent(new PointerEvent('pointerdown', opt));
+        l.dispatchEvent(new PointerEvent('pointerup', opt));
+    });
+    log(await page.waitForSelector('.sk-level-neuling', {visible: true, timeout: 2000}).then(() => true, () => false),
+        'Start-Knopf öffnet die Stufenwahl auch ohne click-Ereignis');
     // Start-Knopf: bei Bedarf erneut klicken (ein seltener verlorener Klick ließ sich nicht nachstellen).
     for (let i = 0; i < 3 && !(await page.$('.sk-level-neuling')); i++) {
         await page.click('.sk-launcher');

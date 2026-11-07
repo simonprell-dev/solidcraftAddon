@@ -1,7 +1,7 @@
 // End-to-End-Test für die Kapitel 2–6: jedes Kapitel in einem neuen Design der echten Web-App.
 // Die Konstruktion übernimmt der Test über window.solidcraft; geprüft wird, dass der Kurs jede
 // Aufgabe abhakt und in jedem Lern-Schritt die Hand (mit 👆) auf ein Ziel zeigt.
-// Aufruf: npm run e2e:chapters [anhaenger wuerfel …]   (HEADFUL=1 zum Zuschauen)
+// Aufruf: npm run e2e:chapters [anhaenger wuerfel …]   (HEADFUL=1 zum Zuschauen, UI_LANG=en-US auf Englisch)
 import puppeteer from 'puppeteer-core';
 import fs from 'fs';
 import path from 'path';
@@ -142,7 +142,7 @@ const browser = await puppeteer.launch({
     executablePath,
     headless: process.env.HEADFUL ? false : 'new',
     args: [`--disable-extensions-except=${root}`, `--load-extension=${root}`,
-        '--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--lang=de-DE'],
+        '--enable-unsafe-swiftshader', '--use-angle=swiftshader', `--lang=${process.env.UI_LANG || 'de-DE'}`],
     defaultViewport: {width: 1400, height: 900}
 });
 
@@ -167,7 +167,8 @@ try {
     await page.click('.sk-level-neuling');
     await page.waitForSelector('.sk-next');
 
-    const chapters = await page.evaluate(() => window.SolidcraftKursCourse.chapters.map(ch => ({
+    // Kapitel in der Sprache, die der Kurs gerade zeigt (UI_LANG=en-US für Englisch).
+    const chapters = await page.evaluate(() => window.SolidcraftKurs.chapters().map(ch => ({
         id: ch.id, auto: ch.autoHints,
         steps: ch.steps.map(s => ({kind: s.kind, title: s.title, hints: !!(s.hints && s.hints.length),
             manual: (s.tasks || []).map(t => !!t.manual)}))

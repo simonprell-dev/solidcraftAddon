@@ -12,30 +12,25 @@
     const A = window.SolidcraftKursAccess;
     const C = window.SolidcraftKursContext;
     const T = window.SolidcraftKursTargets;
-    const {chapters, levels} = window.SolidcraftKursCourse;
+    const I = window.SolidcraftKursI18n;
+    const t = (key, vars) => I.t(key, vars);
+    // Kursinhalte: Quelle (deutsch) und die übersetzte Fassung für die aktuelle Sprache.
+    const SRC = window.SolidcraftKursCourse;
+    const levels = SRC.levels;
+    let chapters = SRC.chapters;
 
     const STATE_KEY = 'solidcraft-kurs:v1';
     const TICK_MS = 200;
 
-    const KIND = {
-        info: {label: 'Info', icon: '💡'},
-        learn: {label: 'Lernen', icon: '🧩'},
-        creative: {label: 'Kreativ', icon: '🎨'},
-        game: {label: 'Anschauen', icon: '🔍'},
-        challenge: {label: 'Challenge', icon: '⭐'}
-    };
-    const LEVELS = [
-        {id: 'neuling', icon: '🌱', title: 'Neuling', text: 'Ich habe noch nie am Computer etwas in 3D gebaut.'},
-        {id: 'probiert', icon: '🔧', title: 'Schon mal ausprobiert', text: 'Ich kenne Tinkercad oder ein anderes 3D-Programm ein bisschen.'},
-        {id: 'profi', icon: '🚀', title: 'Ich kenne mich aus', text: 'Skizzieren und Extrudieren kenne ich schon.'}
-    ];
+    const KIND = {info: {icon: '💡'}, learn: {icon: '🧩'}, creative: {icon: '🎨'}, game: {icon: '🔍'}, challenge: {icon: '⭐'}};
+    const LEVELS = [{id: 'neuling', icon: '🌱'}, {id: 'probiert', icon: '🔧'}, {id: 'profi', icon: '🚀'}];
     const chapterIndex = id => Math.max(0, chapters.findIndex(ch => ch.id === id));
 
     // ---------- Gespeicherter Zustand ----------
 
     function defaultState () {
         return {started: false, open: false, collapsed: false, chapterId: chapters[0].id, step: 0,
-            done: {}, manual: {}, pos: null, transition: null, bases: {}, chapterBodies: {}, nav: 0};
+            done: {}, manual: {}, pos: null, transition: null, bases: {}, chapterBodies: {}, nav: 0, lang: 'auto'};
     }
     function loadState () {
         let loaded = defaultState();
@@ -285,24 +280,24 @@
 
         const header = el('div', 'sk-header');
         const titles = el('div', 'sk-header-titles');
-        titles.appendChild(el('div', 'sk-header-brand', '3D-Kurs'));
+        titles.appendChild(el('div', 'sk-header-brand', t('brand')));
         titles.appendChild(el('div', 'sk-header-sub', state.transition ?
-            `Projekt sichern → Kapitel ${chapterIndex(state.transition) + 1}` :
-            `Kapitel ${state.chapter + 1}: ${chapter.title} · ${state.step + 1}/${chapter.steps.length}`));
+            t('header.transition', {n: chapterIndex(state.transition) + 1}) :
+            t('header.step', {n: state.chapter + 1, title: chapter.title, step: state.step + 1, total: chapter.steps.length})));
         header.appendChild(titles);
         const actions = el('div', 'sk-header-actions');
-        actions.appendChild(button('sk-icon-btn', '☰', 'Kapitelübersicht', () => {
+        actions.appendChild(button('sk-icon-btn', '☰', t('btn.menu'), () => {
             run.view = run.view === 'menu' ? (state.transition ? 'transition' : 'step') : 'menu';
             state.collapsed = false;
             renderPanel();
         }));
         actions.appendChild(button('sk-icon-btn', state.collapsed ? '▴' : '▾',
-            state.collapsed ? 'Ausklappen' : 'Einklappen', () => {
+            state.collapsed ? t('btn.expand') : t('btn.collapse'), () => {
                 state.collapsed = !state.collapsed;
                 saveState();
                 renderPanel();
             }));
-        actions.appendChild(button('sk-icon-btn', '✕', 'Kurs schließen (Fortschritt bleibt gespeichert)', () => {
+        actions.appendChild(button('sk-icon-btn', '✕', t('btn.close'), () => {
             state.open = false;
             saveState();
             renderPanel();
@@ -323,7 +318,7 @@
 
         if (state.collapsed) {
             const mini = el('div', 'sk-mini');
-            mini.textContent = state.transition ? '💾 Projekt sichern' : `${KIND[step.kind].icon} ${step.title}`;
+            mini.textContent = state.transition ? t('transition.kind') : `${KIND[step.kind].icon} ${step.title}`;
             mini.addEventListener('click', () => {
                 state.collapsed = false;
                 saveState();
@@ -348,7 +343,7 @@
         if (run.view === 'step') panel.appendChild(renderFooter(step));
         if (run.view === 'transition') panel.appendChild(renderTransitionFooter());
         if (run.view === 'done') panel.appendChild(renderDoneFooter());
-        if (!wasReady) panel.appendChild(el('div', 'sk-loading', 'SolidCraft lädt noch …'));
+        if (!wasReady) panel.appendChild(el('div', 'sk-loading', t('loading')));
         clampPanel();
         lastHintKey = '';
         lastResultsKey = '';
@@ -363,7 +358,7 @@
             li.appendChild(el('span', 'sk-task-text', task.text));
             if (task.manual) {
                 li.classList.add('sk-task-manual');
-                li.title = 'Zum Abhaken klicken';
+                li.title = t('task.clickToCheck');
                 li.addEventListener('click', () => {
                     const key = `${idPrefix}.${i}`;
                     state.manual[key] = !state.manual[key];
@@ -379,7 +374,7 @@
 
     function renderStep (body, step) {
         const kind = KIND[step.kind];
-        body.appendChild(el('div', `sk-kind sk-kind-${step.kind}`, `${kind.icon} ${kind.label}`));
+        body.appendChild(el('div', `sk-kind sk-kind-${step.kind}`, `${kind.icon} ${t('kind.' + step.kind)}`));
         body.appendChild(el('h3', 'sk-title', step.title));
         body.appendChild(el('div', 'sk-text', step.text));
         if (step.tasks && step.tasks.length) body.appendChild(taskList(step.tasks, stepId(state.chapter, state.step)));
@@ -388,22 +383,22 @@
 
     function renderFooter (step) {
         const footer = el('div', 'sk-footer');
-        footer.appendChild(button('sk-btn sk-btn-secondary', '←', 'Zurück', () => go(-1)));
+        footer.appendChild(button('sk-btn sk-btn-secondary', '←', t('nav.back'), () => go(-1)));
         if (step.hints && step.hints.length && step.kind !== 'info') {
             footer.appendChild(button(`sk-btn sk-btn-hint ${run.hintsOn ? 'sk-on' : ''}`,
-                run.hintsOn ? '👆 Hinweise aus' : '👆 Zeig mir wie', 'Zeigt, wo du klicken musst', () => {
+                run.hintsOn ? t('hints.off') : t('hints.on'), t('hints.title'), () => {
                     run.hintsOn = !run.hintsOn;
                     renderPanel();
                 }));
         } else {
             footer.appendChild(el('span', 'sk-spacer'));
         }
-        footer.appendChild(button('sk-btn sk-btn-primary sk-next', 'Weiter →', '', () => go(1)));
+        footer.appendChild(button('sk-btn sk-btn-primary sk-next', t('nav.next'), '', () => go(1)));
         return footer;
     }
 
     function renderMenu (body) {
-        body.appendChild(el('h3', 'sk-title', 'Kapitel'));
+        body.appendChild(el('h3', 'sk-title', t('menu.title')));
         chapters.forEach((chapter, ci) => {
             const section = el('div', 'sk-menu-chapter');
             section.appendChild(el('div', 'sk-menu-chapter-title',
@@ -415,7 +410,19 @@
             });
             body.appendChild(section);
         });
-        body.appendChild(button('sk-btn sk-btn-secondary sk-menu-level-btn', 'Stufe neu wählen', '', showLevelDialog));
+        body.appendChild(button('sk-btn sk-btn-secondary sk-menu-level-btn', t('menu.level'), '', showLevelDialog));
+        // Sprache: automatisch wie SolidCraft oder fest gewählt.
+        const langs = el('div', 'sk-menu-chapter sk-menu-lang');
+        langs.appendChild(el('div', 'sk-menu-chapter-title', `🌍 ${t('menu.language')}`));
+        [['auto', t('lang.auto')], ...I.langs().map(code => [code, I.name(code)])].forEach(([code, name]) => {
+            langs.appendChild(button(`sk-menu-step sk-lang-${code} ${(state.lang || 'auto') === code ? 'sk-current' : ''}`, name, '', () => {
+                state.lang = code;
+                saveState();
+                applyLanguage();
+                renderPanel();
+            }));
+        });
+        body.appendChild(langs);
     }
 
     let lastResultsKey = '';
@@ -429,15 +436,15 @@
         const success = panel.querySelector('.sk-success');
         const hasTasks = step.tasks && step.tasks.length;
         if (next) {
-            next.textContent = isLastStep() ? 'Kapitel fertig ✓' : 'Weiter →';
+            next.textContent = isLastStep() ? t('nav.chapterDone') : t('nav.next');
             next.classList.toggle('sk-pulse', !!(complete && hasTasks));
             next.classList.toggle('sk-muted', !!(hasTasks && !complete));
-            next.title = hasTasks && !complete ? 'Du kannst auch überspringen' : '';
+            next.title = hasTasks && !complete ? t('nav.skip') : '';
         }
         if (success) {
             if (complete && hasTasks) {
                 const following = nextStepInfo();
-                success.innerHTML = `<b>Super gemacht! 🎉</b>${following ? `<br>Als Nächstes: ${following}` : ''}`;
+                success.innerHTML = `<b>${t('success.title')}</b>${following ? `<br>${t('success.next', {what: following})}` : ''}`;
                 success.style.display = 'block';
             } else {
                 success.style.display = 'none';
@@ -454,7 +461,7 @@
             return `${KIND[s.kind].icon} ${s.title}`;
         }
         const nc = chapters[state.chapter + 1];
-        return nc ? `📘 Kapitel ${state.chapter + 2}: ${nc.title}` : '';
+        return nc ? t('next.chapter', {n: state.chapter + 2, title: nc.title}) : '';
     }
 
     function go (delta) {
@@ -496,21 +503,20 @@
     function renderDone (body) {
         const nextChapter = chapters[state.chapter + 1];
         body.appendChild(el('div', 'sk-trophy', '🏆'));
-        body.appendChild(el('h3', 'sk-title sk-center', `Kapitel „${currentChapter().title}“ geschafft!`));
+        body.appendChild(el('h3', 'sk-title sk-center', t('done.title', {title: currentChapter().title})));
         body.appendChild(el('div', 'sk-text sk-center', nextChapter ?
-            `<p>Stark! Bereit für das nächste Projekt: <b>${nextChapter.title}</b>?</p>` :
-            '<p>Du hast den ganzen 3D-Kurs geschafft. Jetzt bist du ein echter Konstrukteur! 🚀</p>'));
+            t('done.next', {title: nextChapter.title}) : t('done.all')));
     }
 
     function renderDoneFooter () {
         const nextChapter = chapters[state.chapter + 1];
         const row = el('div', 'sk-footer');
-        row.appendChild(button('sk-btn sk-btn-secondary', 'Zur Übersicht', '', () => {
+        row.appendChild(button('sk-btn sk-btn-secondary', t('done.overview'), '', () => {
             run.view = 'menu';
             renderPanel();
         }));
         if (nextChapter) {
-            row.appendChild(button('sk-btn sk-btn-primary', 'Weiter →', 'Projekt sichern und nächstes Kapitel starten', () => {
+            row.appendChild(button('sk-btn sk-btn-primary', t('nav.next'), t('done.nextTitle'), () => {
                 state.transition = nextChapter.id;
                 run.view = 'transition';
                 saveState();
@@ -522,17 +528,16 @@
 
     // ---------- Projekt sichern zwischen den Kapiteln ----------
 
-    const TRANSITION_TASKS = [
-        {text: 'Speichere dein Projekt (oben: Speichern)', manual: true, target: 'handle:appbar:save', hint: 'Hier speichern'},
-        {text: 'Öffne ein neues, leeres Design (oben: +)', manual: true, target: 'handle:tab:new', hint: 'Neues Design'}
+    const TRANSITION_TASKS = () => [
+        {text: t('transition.save'), manual: true, target: 'handle:appbar:save', hint: t('transition.saveHint')},
+        {text: t('transition.new'), manual: true, target: 'handle:tab:new', hint: t('transition.newHint')}
     ];
 
     function renderTransition (body) {
-        body.appendChild(el('div', 'sk-kind sk-kind-creative', '💾 Projekt sichern'));
-        body.appendChild(el('h3', 'sk-title', 'Bevor es weitergeht'));
-        body.appendChild(el('div', 'sk-text', '<p>Speichere dein fertiges Projekt, damit es nicht verloren geht. ' +
-            'Dann beginnst du das nächste Kapitel in einem neuen, leeren Design.</p>'));
-        body.appendChild(taskList(TRANSITION_TASKS, `transition.${state.transition}`));
+        body.appendChild(el('div', 'sk-kind sk-kind-creative', t('transition.kind')));
+        body.appendChild(el('h3', 'sk-title', t('transition.title')));
+        body.appendChild(el('div', 'sk-text', t('transition.text')));
+        body.appendChild(taskList(TRANSITION_TASKS(), `transition.${state.transition}`));
         requestAnimationFrame(() => panel.querySelectorAll('.sk-task').forEach(li => {
             li.classList.toggle('sk-task-done', !!state.manual[`transition.${state.transition}.${li.dataset.index}`]);
         }));
@@ -541,14 +546,15 @@
     function renderTransitionFooter () {
         const footer = el('div', 'sk-footer');
         footer.appendChild(el('span', 'sk-spacer'));
-        footer.appendChild(button('sk-btn sk-btn-primary', `Kapitel ${chapterIndex(state.transition) + 1} starten →`, '',
+        footer.appendChild(button('sk-btn sk-btn-primary', t('transition.start', {n: chapterIndex(state.transition) + 1}), '',
             () => openChapter(chapterIndex(state.transition), 0)));
         return footer;
     }
 
     function transitionHint () {
-        const i = TRANSITION_TASKS.findIndex((t, k) => !state.manual[`transition.${state.transition}.${k}`]);
-        return i < 0 ? null : TRANSITION_TASKS[i];
+        const tasks = TRANSITION_TASKS();
+        const i = tasks.findIndex((x, k) => !state.manual[`transition.${state.transition}.${k}`]);
+        return i < 0 ? null : tasks[i];
     }
 
     // ---------- Konfetti ----------
@@ -611,11 +617,10 @@
         const backdrop = el('div', 'sk-modal-backdrop');
         shield(backdrop);
         const modal = el('div', 'sk-modal');
-        modal.appendChild(button('sk-modal-close', '✕', 'Schließen', () => backdrop.remove()));
-        modal.appendChild(el('div', 'sk-modal-brand', 'Einführungskurs'));
-        modal.appendChild(el('h2', 'sk-modal-title', '3D-Kurs starten'));
-        modal.appendChild(el('p', 'sk-modal-text', 'Wie gut kennst du dich mit 3D-Konstruieren schon aus? ' +
-            'Je nach Stufe startest du an einer anderen Stelle im Kurs.'));
+        modal.appendChild(button('sk-modal-close', '✕', t('modal.close'), () => backdrop.remove()));
+        modal.appendChild(el('div', 'sk-modal-brand', t('modal.brand')));
+        modal.appendChild(el('h2', 'sk-modal-title', t('modal.title')));
+        modal.appendChild(el('p', 'sk-modal-text', t('modal.text')));
 
         const grid = el('div', 'sk-level-grid');
         LEVELS.forEach(level => {
@@ -629,16 +634,16 @@
                 openChapter(ci, 0);
             });
             card.appendChild(el('div', 'sk-level-icon', level.icon));
-            card.appendChild(el('div', 'sk-level-title', level.title));
-            card.appendChild(el('div', 'sk-level-text', level.text));
-            card.appendChild(el('div', 'sk-level-start', `Start: Kapitel ${ci + 1}`));
+            card.appendChild(el('div', 'sk-level-title', t(`level.${level.id}.title`)));
+            card.appendChild(el('div', 'sk-level-text', t(`level.${level.id}.text`)));
+            card.appendChild(el('div', 'sk-level-start', t('modal.start', {n: ci + 1})));
             grid.appendChild(card);
         });
         modal.appendChild(grid);
 
         if (state.started) {
             modal.appendChild(button('sk-btn sk-btn-primary sk-resume',
-                `Weitermachen: Kapitel ${state.chapter + 1}, „${currentStep().title}“`, '', () => {
+                t('modal.resume', {n: state.chapter + 1, title: currentStep().title}), '', () => {
                     backdrop.remove();
                     state.open = true;
                     state.collapsed = false;
@@ -663,7 +668,13 @@
     function updateLauncher () {
         const show = !state.open && !document.querySelector('.sk-modal-backdrop');
         if (!launcher || !document.body.contains(launcher)) {
-            launcher = button('sk-launcher', '', 'Einführungskurs öffnen', () => {
+            // Auslösen schon beim Loslassen der Maustaste: SolidCraft fängt Mausereignisse ab, und
+            // gelegentlich meldet der Browser danach kein „click“ mehr. Doppelt auslösen verhindert firedAt.
+            let firedAt = 0;
+            let pressed = false;
+            const openFromLauncher = () => {
+                if (Date.now() - firedAt < 600) return;
+                firedAt = Date.now();
                 if (!state.started) {
                     showLevelDialog();
                     return;
@@ -673,17 +684,59 @@
                 saveState();
                 if (state.transition) run.view = 'transition';
                 renderPanel();
+            };
+            launcher = button('sk-launcher', '', t('launcher.title'), openFromLauncher);
+            launcher.addEventListener('pointerdown', () => { pressed = true; });
+            launcher.addEventListener('pointerup', () => {
+                if (pressed) openFromLauncher();
+                pressed = false;
             });
+            launcher.addEventListener('pointerleave', () => { pressed = false; });
             shield(launcher);
             document.body.appendChild(launcher);
         }
         // Nur bei geänderter Beschriftung neu setzen – sonst verschluckt der Austausch Klicks.
-        const label = state.started ? 'Kurs öffnen' : '3D-Kurs starten';
+        const label = state.started ? t('launcher.open') : t('launcher.start');
         if (launcher.dataset.label !== label) {
             launcher.dataset.label = label;
             launcher.innerHTML = `<span class="sk-launcher-icon">🎓</span><span>${label}</span>`;
         }
         launcher.style.display = show ? '' : 'none';
+    }
+
+    // ---------- Sprache ----------
+
+    let appLang = null;        // Sprache von SolidCraft (ui.prefs.language), sobald bekannt
+    let currentLang = null;
+    let prefsAt = 0;
+
+    function wantedLang () {
+        return state.lang && state.lang !== 'auto' ? state.lang : I.detect(appLang, navigator.language);
+    }
+
+    // Kurs und Oberfläche in die gewünschte Sprache bringen (nur wenn sie sich ändert).
+    function applyLanguage () {
+        const lang = wantedLang();
+        if (lang === currentLang) return;
+        currentLang = lang;
+        I.setLang(lang);
+        chapters = I.localize(SRC, lang).chapters;
+        lastHintKey = '';
+        lastResultsKey = '';
+        if (launcher) launcher.dataset.label = '';
+        if (panel && document.body.contains(panel)) renderPanel();
+        if (document.querySelector('.sk-modal-backdrop')) showLevelDialog();
+    }
+
+    // Alle paar Sekunden nachsehen, ob in SolidCraft die Sprache umgestellt wurde.
+    function pollAppLanguage () {
+        if (!A.ready() || Date.now() - prefsAt < 5000) return;
+        prefsAt = Date.now();
+        A.prefs().then(p => {
+            if (!p) return;
+            appLang = p.language;
+            applyLanguage();
+        });
     }
 
     // ---------- Hauptschleife ----------
@@ -701,6 +754,7 @@
     }
 
     async function step () {
+        pollAppLanguage();
         updateLauncher();
         if (!state.open) {
             if (overlay) clearOverlay();
@@ -739,8 +793,8 @@
         const c = C.make(snap, run.base);
 
         if (run.view === 'transition') {
-            const t = transitionHint();
-            const pt = t && await locate(t.target, t.hint, snap);
+            const th = transitionHint();
+            const pt = th && await locate(th.target, th.hint, snap);
             return pt && state.open && run.view === 'transition' ? drawPoint(pt) : clearOverlay();
         }
         if (run.view !== 'step') return clearOverlay();
@@ -813,12 +867,14 @@
         Object.keys(state).forEach(key => delete state[key]);
         Object.assign(state, loaded, local, merged);
         if (`${state.chapterId}|${state.step}|${state.transition}` === before) {
-            // Nur Haken oder Fensterlage geändert: neu zeichnen, nichts speichern.
+            // Nur Haken, Sprache oder Fensterlage geändert: neu zeichnen, nichts speichern.
+            applyLanguage();
             lastResultsKey = '';
             renderPanel();
             return;
         }
         run.view = state.transition ? 'transition' : 'step';
+        applyLanguage();
         if (state.transition) renderPanel();
         else enterStep();
     });
@@ -841,7 +897,8 @@
     });
 
     // Für den End-to-End-Test und zur Fehlersuche in der Konsole.
-    window.SolidcraftKurs = {state, run, showLevelDialog, openChapter};
+    window.SolidcraftKurs = {state, run, showLevelDialog, openChapter, chapters: () => chapters, lang: () => currentLang};
 
+    applyLanguage();
     setInterval(tick, TICK_MS);
 })();

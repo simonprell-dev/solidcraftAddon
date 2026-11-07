@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {load} from './load.mjs';
 
-const T = load('course/targets.js').SolidcraftKursTargets;
+const T = load(['i18n/de.js', 'i18n/en.js', 'course/i18n.js', 'course/targets.js']).SolidcraftKursTargets;
 
 const snap = (names, viewport = [0, 34, 1400, 866]) => ({
     ui: {viewport},

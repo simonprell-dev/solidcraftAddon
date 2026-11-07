@@ -12,6 +12,24 @@ Sie funktioniert wie der [Einführungskurs für Scratch](https://simonprell-dev.
   extrudiert wurde oder ob der Name heraussteht, hakt ab und wirft Konfetti 🎉
 - **Drei Stufen** zum Einstieg, Fortschritt bleibt gespeichert
 
+## Sprachen
+
+Der Kurs gibt es auf **Deutsch** und **Englisch**. Er spricht automatisch die Sprache, in der
+SolidCraft läuft (Einstellung in SolidCraft bzw. Browsersprache) – so passen die Button-Namen in
+den Texten immer zur Oberfläche. Im Kursmenü (☰ → 🌍 Sprache) lässt sie sich fest einstellen.
+Für andere SolidCraft-Sprachen zeigt der Kurs Englisch.
+
+**Neue Sprache hinzufügen:**
+
+1. `i18n/en.js` als `i18n/<code>.js` kopieren (z. B. `fr`) und übersetzen:
+   `ui` (Kursfenster), `labels` (Tab- und Panel-Namen, wie SolidCraft sie in dieser Sprache zeigt),
+   `course` (Titel und Text jedes Schritts) und `phrases` (alle kurzen Aufgaben-/Hinweistexte,
+   Schlüssel ist der deutsche Text). Button-Namen aus `assets/locales/<code>.json` von SolidCraft nehmen.
+2. Die Datei in `background.js` (`PAGE_SCRIPTS.js`) vor `course/i18n.js` eintragen.
+3. `_locales/<code>/messages.json` für Name und Menü der Erweiterung anlegen.
+4. `npm run check` meldet jede fehlende Übersetzung; `UI_LANG=<code> npm run e2e:chapters`
+   spielt den Kurs in der neuen Sprache durch.
+
 ## Kursübersicht
 
 | # | Projekt | Stufe | Neue Werkzeuge | Schritte |
@@ -56,7 +74,8 @@ Erweiterung liest darüber alle 200 ms (nur lesend, sie verändert das Modell ni
 | `lib/solidcraft-access.js` | Zugriff auf `window.solidcraft`, ein Snapshot pro Takt |
 | `course/context.js` | Prüf-Hilfen `c.inSketch()`, `c.height()`, `c.top()` … |
 | `course/targets.js` | Hinweis-Ziele (`tool:solid.extrude`, `plane:XY` …) → Bildschirmpunkt |
-| `course/course-data.js` | **Kursinhalte** – für neue Kapitel nur diese Datei ändern |
+| `course/course-data.js` | **Kursinhalte** (Deutsch) – für neue Kapitel nur diese Datei ändern |
+| `course/i18n.js`, `i18n/*.js` | Sprachen: Erkennung, Oberflächentexte, Übersetzungen der Kursinhalte |
 | `course/course.js` | Kursfenster, Hand, Stufenwahl, Konfetti |
 
 ## Entwicklung
@@ -67,7 +86,8 @@ npm test        # Unit-Tests (node:test)
 npm run check   # prüft die Kursdaten
 npm run e2e     # spielt Kapitel 1 in der echten Web-App durch (Edge/Chromium, Erweiterung geladen)
 npm run e2e:robust  # Zurück, Neuladen, zwei Tabs, verdecktes Ziel, Pokal, Übergang
-npm run e2e:chapters  # spielt die Kapitel 2–6 durch (einzeln: npm run e2e:chapters wuerfel)
+npm run e2e:chapters  # spielt die Kapitel 2–6 durch (einzeln: npm run e2e:chapters wuerfel; UI_LANG=en-US auf Englisch)
+npm run e2e:english   # Kurs auf Englisch, Sprachwahl im Menü, Kurs folgt der SolidCraft-Sprache
 ```
 
 `npm run e2e` braucht Edge oder Chromium: Google Chrome ab Version 137 lädt entpackte

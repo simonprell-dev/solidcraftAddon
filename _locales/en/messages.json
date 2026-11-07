@@ -1,0 +1,16 @@
+{
+  "extName": {"message": "Intro course for SolidCraft – learn 3D design"},
+  "extDescription": {"message": "Guided 3D design course for kids right inside the SolidCraft editor: name tag, keychain, game die and more. For school, clubs and home."},
+  "actionTitle": {"message": "Intro course for SolidCraft"},
+  "titleOn": {"message": "Intro course for SolidCraft\nClick: open SolidCraft · Right-click: settings"},
+  "titleOff": {"message": "Intro course for SolidCraft (switched off)\nRight-click to switch on"},
+  "badgeOff": {"message": "OFF"},
+  "menuEnabled": {"message": "Extension switched on"},
+  "menuReset": {"message": "Reset course progress …"},
+  "menuHelp": {"message": "Help and instructions"},
+  "toastOn": {"message": "The extension is switched on. Reload the page (F5) for it to take effect."},
+  "toastOff": {"message": "The extension is switched off. Reload the page (F5) to make it disappear."},
+  "confirmReset": {"message": "Really reset your progress in the intro course?\n\nAll ticked steps and your chosen level will be lost. Your designs are kept."},
+  "toastResetLater": {"message": "Your course progress will be reset as soon as you reload SolidCraft (F5)."},
+  "toastReset": {"message": "Your course progress has been reset."}
+}

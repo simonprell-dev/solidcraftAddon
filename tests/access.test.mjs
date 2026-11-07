@@ -138,3 +138,12 @@ test('snapshot() holt sketch.inspect der neuesten Skizze, wenn das Modell neu ge
     await a.snapshot();
     assert.equal(api.calls.filter(m => m === 'engine.execute').length, 1);
 });
+
+test('prefs() liest die SolidCraft-Einstellungen (Sprache), bei Fehler null', async () => {
+    const api = fakeApi();
+    const orig = api.request.bind(api);
+    api.request = (m, p) => m === 'ui.prefs' ? Promise.resolve({language: 'system', dark: true}) : orig(m, p);
+    assert.equal((await access({solidcraft: api}).prefs()).language, 'system');
+    assert.equal(await access({solidcraft: fakeApi()}).prefs(), null);
+    assert.equal(await access({}).prefs(), null);
+});

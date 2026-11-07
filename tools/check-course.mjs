@@ -50,13 +50,33 @@ export function checkCourse (course, known) {
     return problems;
 }
 
+// Alle Sprachen vollständig? (Oberfläche, Beschriftungen, Kursinhalte, _locales der Erweiterung)
+export function checkLanguages () {
+    const window = {};
+    for (const f of ['i18n/de.js', 'i18n/en.js', ...fs.readdirSync(path.join(root, 'i18n'))
+        .filter(n => /.js$/.test(n) && !['de.js', 'en.js'].includes(n)).map(n => 'i18n/' + n),
+    'course/i18n.js', 'course/course-data.js']) {
+        new Function('window', fs.readFileSync(path.join(root, f), 'utf8'))(window);
+    }
+    const I = window.SolidcraftKursI18n;
+    const problems = I.langs().flatMap(lang => I.missing(window.SolidcraftKursCourse, lang));
+    const locales = fs.readdirSync(path.join(root, '_locales'));
+    const keysOf = l => Object.keys(JSON.parse(fs.readFileSync(path.join(root, '_locales', l, 'messages.json'), 'utf8')));
+    const base = keysOf('de');
+    for (const l of locales) {
+        for (const k of base) if (!keysOf(l).includes(k)) problems.push(`_locales/${l}: „${k}“ fehlt`);
+    }
+    for (const lang of I.langs()) if (!locales.includes(lang)) problems.push(`_locales/${lang} fehlt`);
+    return problems;
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
     const window = {};
     new Function('window', fs.readFileSync(path.join(root, 'course/course-data.js'), 'utf8'))(window);
     const course = window.SolidcraftKursCourse;
-    const problems = checkCourse(course, knownCommands());
+    const problems = [...checkCourse(course, knownCommands()), ...checkLanguages()];
     problems.forEach(p => console.log(p));
     const steps = course.chapters.reduce((n, ch) => n + ch.steps.length, 0);
-    console.log(problems.length ? `${problems.length} Probleme` : `Kurs ok: ${course.chapters.length} Kapitel, ${steps} Schritte.`);
+    console.log(problems.length ? `${problems.length} Probleme` : `Kurs ok: ${course.chapters.length} Kapitel, ${steps} Schritte, Sprachen vollständig.`);
     process.exit(problems.length ? 1 : 0);
 }

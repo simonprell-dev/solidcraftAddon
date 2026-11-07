@@ -28,7 +28,11 @@ App. **Für ein neues Kapitel wird nur `course-data.js` geändert.** Fehlt eine 
    Neue Command-IDs in `tools/known-commands.json` eintragen.
 5. **Prüfen:** `npm test`, `npm run check`. Dann den E2E-Test um das Kapitel erweitern und
    `npm run e2e` ausführen – bis alles grün ist.
-6. **Abschließen:** `CHANGELOG.md` und Kursübersicht im `README.md` aktualisieren.
+6. **Übersetzen:** Neue Schritte in jeder Sprache unter `i18n/<code>.js` ergänzen: Titel und Text
+   in `course.chapters.<id>.steps`, neue kurze Aufgaben-/Hinweistexte und Suchbegriffe in `phrases`
+   (Schlüssel = deutscher Text). Button-Namen wie in der jeweiligen SolidCraft-Oberfläche.
+   `npm run check` listet alles, was fehlt.
+7. **Abschließen:** `CHANGELOG.md` und Kursübersicht im `README.md` aktualisieren.
 
 ## Aufbau eines Kapitels
 

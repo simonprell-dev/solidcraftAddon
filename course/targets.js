@@ -17,15 +17,11 @@
 (function () {
     'use strict';
 
-    // Beschriftungen, wie die deutsche Oberfläche sie zeigt (SolidCraft 0.30, geprüft per Screenshot).
-    const TAB_DE = {MODEL: 'Modell', SKETCH: 'Skizze', SURFACE: 'Fläche', ASSEMBLE: 'Zusammenbau',
-        INSERT: 'Einfügen', INSPECT: 'Prüfen', MANAGE: 'Verwalten', VIEW: 'Ansicht', 'SHEET METAL': 'Blech'};
-    const PANEL_DE = {CREATE: 'Erstellen', MODIFY: 'Ändern', ARRANGE: 'Anordnen', CONSTRUCT: 'Konstruktion',
-        CONFIGURE: 'Konfigurieren', CONSTRAIN: 'Abhängigkeiten', PATTERN: 'Muster', REFERENCE: 'Referenz',
-        INSPECT: 'Prüfen'};
-
-    const tabName = t => TAB_DE[t] || t;
-    const panelName = p => PANEL_DE[p] || p;
+    // Texte und SolidCraft-Beschriftungen in der Kurssprache (course/i18n.js, i18n/<sprache>.js).
+    const I = () => window.SolidcraftKursI18n;
+    const tabName = t => I().label('tabs', t);
+    const panelName = p => I().label('panels', p);
+    const viaSearch = (target, name) => ({kind: 'via', target, text: I().t('via.search', {name})});
 
     function point (snap, name) {
         const h = snap.handles.get(name);
@@ -41,15 +37,15 @@
         // ist der sicherste Weg (Taste S).
         const search = opts && opts.search && point(snap, 'ribbon:search');
         const info = cmds && cmds.get(cmd);
-        if (!info) return search ? {kind: 'via', target: search, text: `Klicke hier und suche „${opts.search}“`} : null;
+        if (!info) return search ? viaSearch(search, opts.search) : null;
         // Mit Suchtext ist die Befehlssuche am sichersten (das Werkzeug kann in einem
         // Unter-Aufklapper stecken, z. B. Rechteck ▾).
-        if (search) return {kind: 'via', target: search, text: `Klicke hier und suche „${opts.search}“`};
+        if (search) return viaSearch(search, opts.search);
         // Panel mit Aufklapper (z. B. Erstellen ▾) im Tab des Werkzeugs.
         const panel = point(snap, `panel:${info.tab}:${info.panel}`);
-        if (panel) return {kind: 'via', target: panel, text: `Klicke auf „${panelName(info.panel)} ▾“`};
+        if (panel) return {kind: 'via', target: panel, text: I().t('via.panel', {name: panelName(info.panel)})};
         const tab = point(snap, `tab:${info.tab}`);
-        if (tab) return {kind: 'via', target: tab, text: `Öffne oben den Tab „${tabName(info.tab)}“`};
+        if (tab) return {kind: 'via', target: tab, text: I().t('via.tab', {name: tabName(info.tab)})};
         return null;
     }
 

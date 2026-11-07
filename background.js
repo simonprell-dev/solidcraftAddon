@@ -14,12 +14,17 @@ const EDITOR_URL = 'https://app.solidcraft.io/';
 const HELP_URL = 'https://github.com/simonprell-dev/solidcraftAddon#benutzung';
 const APP_TABS = 'https://app.solidcraft.io/*';
 const STATE_KEY = 'solidcraft-kurs:v1';
+// Texte der Erweiterung (Menü, Meldungen) in der Sprache des Browsers: _locales/<sprache>/messages.json
+const msg = key => chrome.i18n.getMessage(key);
 
 const PAGE_SCRIPTS = {
     id: 'solidcraft-kurs',
     matches: [APP_TABS],
     js: [
         'lib/solidcraft-access.js',
+        'i18n/de.js',
+        'i18n/en.js',
+        'course/i18n.js',
         'course/context.js',
         'course/targets.js',
         'course/course-data.js',
@@ -51,11 +56,9 @@ async function applyEnabled (enabled) {
     if (registered.length) await chrome.scripting.unregisterContentScripts({ids: registered});
     await chrome.scripting.registerContentScripts(enabled ? [PAGE_SCRIPTS, RESET_SCRIPT] : [RESET_SCRIPT]);
 
-    await chrome.action.setBadgeText({text: enabled ? '' : 'AUS'});
+    await chrome.action.setBadgeText({text: enabled ? '' : msg('badgeOff')});
     await chrome.action.setBadgeBackgroundColor({color: '#7D8299'});
-    await chrome.action.setTitle({title: enabled ?
-        'Einführungskurs für SolidCraft\nKlick: SolidCraft öffnen · Rechtsklick: Einstellungen' :
-        'Einführungskurs für SolidCraft (ausgeschaltet)\nRechtsklick zum Einschalten'});
+    await chrome.action.setTitle({title: msg(enabled ? 'titleOn' : 'titleOff')});
 }
 
 // ---------- Kontextmenü ----------
@@ -63,9 +66,9 @@ async function applyEnabled (enabled) {
 function createMenu (enabled) {
     chrome.contextMenus.removeAll(() => {
         chrome.contextMenus.create({id: 'enabled', type: 'checkbox', checked: enabled,
-            title: 'Erweiterung eingeschaltet', contexts: ['action']});
-        chrome.contextMenus.create({id: 'reset', title: 'Lernfortschritt zurücksetzen …', contexts: ['action']});
-        chrome.contextMenus.create({id: 'help', title: 'Hilfe und Anleitung', contexts: ['action']});
+            title: msg('menuEnabled'), contexts: ['action']});
+        chrome.contextMenus.create({id: 'reset', title: msg('menuReset'), contexts: ['action']});
+        chrome.contextMenus.create({id: 'help', title: msg('menuHelp'), contexts: ['action']});
     });
 }
 
@@ -82,9 +85,7 @@ chrome.contextMenus.onClicked.addListener(async info => {
     if (info.menuItemId === 'enabled') {
         await chrome.storage.local.set({enabled: info.checked});
         await applyEnabled(info.checked);
-        notifyTabs(info.checked ?
-            'Die Erweiterung ist eingeschaltet. Lade die Seite neu (F5), damit sie wirkt.' :
-            'Die Erweiterung ist ausgeschaltet. Lade die Seite neu (F5), damit sie verschwindet.');
+        notifyTabs(msg(info.checked ? 'toastOn' : 'toastOff'));
     } else if (info.menuItemId === 'reset') {
         await resetProgress();
     } else if (info.menuItemId === 'help') {
@@ -118,14 +119,14 @@ async function resetProgress () {
     const [answer] = await chrome.scripting.executeScript({
         target: {tabId: tabs[0].id},
         world: 'MAIN',
-        func: () => window.confirm('Lernfortschritt im Einführungskurs wirklich zurücksetzen?\n\n' +
-            'Alle abgehakten Schritte und die gewählte Stufe gehen verloren. Deine Konstruktionen bleiben erhalten.')
+        args: [msg('confirmReset')],
+        func: question => window.confirm(question)
     }).catch(() => [null]);
     if (answer === null) {
         // Rückfrage ging nicht (z. B. Tab schläft): nicht still zurücksetzen, sondern beim nächsten
         // Laden von SolidCraft erledigen – und das ehrlich sagen.
         await chrome.storage.local.set({resetPending: true});
-        notifyTabs('Der Lernfortschritt wird zurückgesetzt, sobald du SolidCraft neu lädst (F5).');
+        notifyTabs(msg('toastResetLater'));
         return;
     }
     if (!answer.result) return;
@@ -144,7 +145,7 @@ async function resetProgress () {
     }).then(() => true, () => false)));
     // Ein Tab ließ sich nicht erreichen → dort beim nächsten Laden nachholen.
     if (results.includes(false)) await chrome.storage.local.set({resetPending: true});
-    notifyTabs('Der Lernfortschritt wurde zurückgesetzt.');
+    notifyTabs(msg('toastReset'));
 }
 
 // ---------- Kurze Meldung in offenen SolidCraft-Tabs ----------

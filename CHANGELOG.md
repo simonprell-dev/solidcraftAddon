@@ -1,5 +1,16 @@
 # Änderungen
 
+## 0.3.0 – 2026-11-07
+
+### Neu
+- Mehrsprachigkeit: Kurs, Kursfenster, Hand-Hinweise, Name und Menü der Erweiterung
+- Englisch komplett (alle 6 Kapitel, 50 Schritte), mit den Button-Namen der englischen SolidCraft-Oberfläche
+- Sprache folgt automatisch SolidCraft; im Kursmenü fest einstellbar
+- `npm run check` prüft jede Sprache auf Vollständigkeit; E2E-Test `npm run e2e:english`
+
+### Verbessert
+- Start-Knopf reagiert auch, wenn der Browser einen Klick verschluckt
+
 ## 0.2.0 – 2026-11-07
 
 ### Neu
