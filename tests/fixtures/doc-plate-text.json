@@ -1,0 +1,143 @@
+{
+ "active_sketch": null,
+ "bodies": [
+  {
+   "area_mm2": 5959.496249349274,
+   "bbox": {
+    "max": [
+     40.000000000000014,
+     15.000000000000005,
+     5.000000000000002
+    ],
+    "min": [
+     -40.000000000000014,
+     -15.000000000000005,
+     0
+    ]
+   },
+   "center_of_mass": [
+    -0.2926960752392786,
+    -0.01161209282011524,
+    1.6271195988348937
+   ],
+   "closed": true,
+   "edges": 192,
+   "face_types": {
+    "cylinder": 9,
+    "other": 1,
+    "plane": 62
+   },
+   "faces": 72,
+   "kernel": {
+    "edges": 204,
+    "faces": 76,
+    "shells": 1,
+    "vertices": 136
+   },
+   "name": "Body1",
+   "vertices": 128,
+   "visible": true,
+   "volume_mm3": 7542.277953118472
+  }
+ ],
+ "dirty": true,
+ "hidden_origin": [],
+ "marker": 4,
+ "metadata": {},
+ "name": "Untitled",
+ "params": [
+  {
+   "comment": "",
+   "error": null,
+   "expression": "4",
+   "model": true,
+   "name": "d1",
+   "unit": "mm",
+   "value": 4
+  }
+ ],
+ "path": null,
+ "redo": 0,
+ "revision": 14,
+ "selection": [],
+ "sketches": [
+  {
+   "curves": 8,
+   "dof": 4,
+   "id": 1,
+   "name": "Sketch1",
+   "profiles": 1,
+   "status": "solved",
+   "visible": false
+  },
+  {
+   "curves": 64,
+   "dof": 0,
+   "id": 3,
+   "name": "Sketch2",
+   "profiles": 7,
+   "status": "solved",
+   "visible": false
+  }
+ ],
+ "timeline": [
+  {
+   "boolean_diagnostics": {
+    "events": [],
+    "truncated": false
+   },
+   "error": null,
+   "id": 1,
+   "ms": 0.6,
+   "name": "Sketch1",
+   "rolled_back": false,
+   "suppressed": false,
+   "type": "Sketch",
+   "warning": null
+  },
+  {
+   "boolean_diagnostics": {
+    "events": [],
+    "truncated": false
+   },
+   "error": null,
+   "id": 2,
+   "ms": 24.1,
+   "name": "Extrude1",
+   "rolled_back": false,
+   "suppressed": false,
+   "type": "ExtrudeFeature",
+   "warning": null
+  },
+  {
+   "boolean_diagnostics": {
+    "events": [],
+    "truncated": false
+   },
+   "error": null,
+   "id": 3,
+   "ms": 3.7,
+   "name": "Sketch2",
+   "rolled_back": false,
+   "suppressed": false,
+   "type": "Sketch",
+   "warning": null
+  },
+  {
+   "boolean_diagnostics": {
+    "events": [],
+    "truncated": false
+   },
+   "error": null,
+   "id": 4,
+   "ms": 184.6,
+   "name": "Extrude2",
+   "rolled_back": false,
+   "suppressed": false,
+   "type": "ExtrudeFeature",
+   "warning": null
+  }
+ ],
+ "undo": 6,
+ "units": "mm"
+}
