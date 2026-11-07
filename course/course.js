@@ -115,8 +115,8 @@
     }
 
     // Ziel → {x, y, text} in Fensterkoordinaten, oder null.
-    async function locate (target, text, snap) {
-        const res = T.resolve(target, snap, await A.commands());
+    async function locate (target, text, snap, opts) {
+        const res = T.resolve(target, snap, await A.commands(), opts);
         if (!res) return null;
         let p = res;
         if (res.kind === 'via') {
@@ -734,7 +734,7 @@
 
         const hint = activeHint(c);
         const target = hint && hintTarget(hint, c);
-        const pt = target && await locate(target, hint.text, snap);
+        const pt = target && await locate(target, hint.text, snap, {search: hint.search});
         // Zwischendurch kann der Schritt gewechselt haben – dann nichts Altes zeichnen.
         if (pt && run.view === 'step' && activeHint(c) === hint) drawPoint(pt);
         else clearOverlay();

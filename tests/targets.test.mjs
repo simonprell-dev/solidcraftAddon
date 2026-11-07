@@ -62,3 +62,15 @@ test('unbekanntes oder fehlendes Ziel → null', () => {
     assert.equal(T.resolve('quatsch', snap([]), cmds), null);
     assert.equal(T.resolve('tool:solid.extrude', null, cmds), null);
 });
+
+test('axis:Z braucht ui.at', () => {
+    assert.deepEqual(T.resolve('axis:Z', snap([]), cmds), {kind: 'need-at', spec: {axis: 'Z'}});
+});
+
+test('tool: ohne Button und Panel, mit Suchtext → Befehlssuche', () => {
+    const c2 = new Map([['solid.combine', {tab: 'SOLID', panel: 'MODIFY', label: 'Combine'}]]);
+    const r = T.resolve('tool:solid.combine', snap(['tab:SOLID', 'ribbon:search']), c2, {search: 'Kombinieren'});
+    assert.equal(r.kind, 'via');
+    assert.equal(r.target.name, 'ribbon:search');
+    assert.equal(r.text, 'Klicke hier und suche „Kombinieren“');
+});

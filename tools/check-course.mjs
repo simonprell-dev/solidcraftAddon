@@ -8,7 +8,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const KINDS = new Set(['info', 'learn', 'creative', 'game', 'challenge']);
 const LEVELS = new Set(['neuling', 'probiert', 'profi']);
-const TARGET_KINDS = new Set(['tool', 'tab', 'handle', 'dialog', 'plane', 'world', 'viewport']);
+const TARGET_KINDS = new Set(['tool', 'tab', 'handle', 'dialog', 'plane', 'axis', 'world', 'viewport']);
 
 export function knownCommands () {
     return new Set(JSON.parse(fs.readFileSync(path.join(root, 'tools/known-commands.json'), 'utf8')));

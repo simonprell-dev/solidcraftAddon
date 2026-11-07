@@ -114,3 +114,27 @@ test('snapshot() liefert die Dokument-ID (für gespeicherte Schritt-Startzustän
     const snap = await access({solidcraft: fakeApi()}).snapshot();
     assert.equal(snap.documentId, 1);
 });
+
+test('snapshot() holt sketch.inspect der neuesten Skizze, wenn das Modell neu gelesen wird', async () => {
+    const api = fakeApi();
+    const orig = api.request.bind(api);
+    let asked = null;
+    api.request = (method, params) => {
+        if (method === 'document.inspect') {
+            api.calls.push(method);
+            return Promise.resolve({bodies: [], sketches: [{id: 1}, {id: 3}], active_sketch: null});
+        }
+        if (method === 'engine.execute') {
+            api.calls.push(method);
+            asked = params;
+            return Promise.resolve({plane: {origin: [0, 0, 0]}, curves: []});
+        }
+        return orig(method, params);
+    };
+    const a = access({solidcraft: api});
+    const snap = await a.snapshot();
+    assert.deepEqual(asked, {command: 'sketch.inspect', params: {sketch: 3}});
+    assert.deepEqual(snap.sketch.plane.origin, [0, 0, 0]);
+    await a.snapshot();
+    assert.equal(api.calls.filter(m => m === 'engine.execute').length, 1);
+});

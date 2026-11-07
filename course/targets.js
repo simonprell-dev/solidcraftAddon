@@ -8,8 +8,11 @@
  *   handle:<name>       beliebiges Handle aus ui.handles, z. B. handle:appbar:save
  *   dialog:<Label>      Feld im offenen Dialog, z. B. dialog:Distance, dialog:OK
  *   plane:XY            Ebene im Modell (über ui.at)
+ *   axis:Z              Achse im Modell (über ui.at)
  *   world:[x,y,z]       Punkt im Modell in mm (über ui.at)
  *   viewport            Mitte der 3D-Ansicht
+ *
+ * Mit opts.search (Hinweisfeld „search“) zeigt tool: als letzten Ausweg auf die Befehlssuche.
  */
 (function () {
     'use strict';
@@ -29,32 +32,37 @@
         return h ? {kind: 'point', x: h.x, y: h.y, name} : null;
     }
 
-    function resolveTool (cmd, snap, cmds) {
+    function resolveTool (cmd, snap, cmds, opts) {
         for (const prefix of ['toolbar:', 'button:', 'dropdown:']) {
             const p = point(snap, prefix + cmd);
             if (p) return p;
         }
+        // Werkzeuge, die nur über einen Aufklapper erreichbar sind: die Befehlssuche oben rechts
+        // ist der sicherste Weg (Taste S).
+        const search = opts && opts.search && point(snap, 'ribbon:search');
         const info = cmds && cmds.get(cmd);
-        if (!info) return null;
+        if (!info) return search ? {kind: 'via', target: search, text: `Klicke hier und suche „${opts.search}“`} : null;
         // Panel mit Aufklapper (z. B. ERSTELLEN ▾) im Tab des Werkzeugs.
         const panel = point(snap, `panel:${info.tab}:${info.panel}`);
         if (panel) return {kind: 'via', target: panel, text: `Klicke auf „${panelName(info.panel)} ▾“`};
+        if (search) return {kind: 'via', target: search, text: `Klicke hier und suche „${opts.search}“`};
         const tab = point(snap, `tab:${info.tab}`);
         if (tab) return {kind: 'via', target: tab, text: `Öffne oben den Tab „${tabName(info.tab)}“`};
         return null;
     }
 
-    function resolve (target, snap, cmds) {
+    function resolve (target, snap, cmds, opts) {
         if (!snap || typeof target !== 'string') return null;
         const i = target.indexOf(':');
         const kind = i < 0 ? target : target.slice(0, i);
         const arg = i < 0 ? '' : target.slice(i + 1);
         switch (kind) {
-        case 'tool': return resolveTool(arg, snap, cmds);
+        case 'tool': return resolveTool(arg, snap, cmds, opts);
         case 'tab': return point(snap, target);
         case 'handle': return point(snap, arg);
         case 'dialog': return point(snap, target);
         case 'plane': return {kind: 'need-at', spec: {plane: arg}};
+        case 'axis': return {kind: 'need-at', spec: {axis: arg}};
         case 'world': {
             try {
                 return {kind: 'need-at', spec: {world: JSON.parse(arg)}};
