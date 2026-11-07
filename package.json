@@ -8,6 +8,8 @@
   "scripts": {
     "test": "node --test tests/*.test.mjs",
     "check": "node tools/check-course.mjs",
+    "check:seo": "node tools/check-seo.mjs",
+    "build:seo": "node tools/build-seo.mjs",
     "e2e": "node tests/e2e.mjs",
     "e2e:robust": "node tests/e2e-robust.mjs",
     "e2e:chapters": "node tests/e2e-chapters.mjs",

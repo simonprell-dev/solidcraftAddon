@@ -85,3 +85,8 @@ test('Store-Grenzen: Name ≤ 75 und Kurzbeschreibung ≤ 132 Zeichen in jeder S
     const {checkStoreLimits} = await import('../tools/check-course.mjs');
     assert.deepEqual(checkStoreLimits(), []);
 });
+
+test('SEO-Check der GitHub-Seite ist sauber', async () => {
+    const {checkSeo} = await import('../tools/check-seo.mjs');
+    assert.deepEqual(checkSeo(), []);
+});

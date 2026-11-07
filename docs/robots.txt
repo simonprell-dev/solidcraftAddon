@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /store/templates/
+
+Sitemap: https://simonprell-dev.github.io/solidcraftAddon/sitemap.xml

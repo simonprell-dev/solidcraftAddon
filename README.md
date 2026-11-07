@@ -120,6 +120,12 @@ Mitmachen: siehe [CONTRIBUTING.md](CONTRIBUTING.md). Neue Kapitel schreibt man m
 | Store-Texte und -Bilder | [`docs/store/STORE-TEXTE.md`](docs/store/STORE-TEXTE.md), `docs/store/de/`, `docs/store/en/` |
 | Pakete | `npm run pack` → `dist/solidcraft-kurs-<version>-store.zip` (Store) und `…zip` (manuell) |
 
+**SEO:** `npm run build:seo` schreibt Titel, Beschreibungen, kanonische URLs, hreflang (DE/EN), Open Graph,
+strukturierte Daten (SoftwareApplication, FAQPage), WebP-Bilder, `sitemap.xml`, `robots.txt` und `404.html`;
+`npm run check:seo` prüft alles (auch in der CI). Texte der Seiten-Köpfe und die FAQ stehen in `tools/build-seo.mjs`.
+Nach dem Veröffentlichen die Seite in der [Google Search Console](https://search.google.com/search-console) und in
+den [Bing Webmaster Tools](https://www.bing.com/webmasters) anmelden und `sitemap.xml` einreichen.
+
 Bilder neu erzeugen: `npm run screenshots` (echte Aufnahmen in SolidCraft, DE und EN) und danach
 `npm run assets` (Werbekacheln, Vorschaubilder, Flyer-PDFs, Store-Screenshots).
 

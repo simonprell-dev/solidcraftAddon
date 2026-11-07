@@ -20,6 +20,8 @@ jobs:
         run: npm test
       - name: Kurs, Sprachen und Store-Grenzen prüfen
         run: npm run check
+      - name: SEO der GitHub-Seite prüfen
+        run: npm run check:seo
       - name: Manifest und _locales sind gültiges JSON
         run: node -e "for (const f of ['manifest.json','_locales/de/messages.json','_locales/en/messages.json']) JSON.parse(require('fs').readFileSync(f,'utf8'))"
       - name: Pakete bauen

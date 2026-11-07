@@ -10,6 +10,14 @@
 - `npm run screenshots`, `npm run assets`, `npm run pack`; GitHub-Workflows „Prüfen“ und „Release“
 - Issue- und PR-Vorlagen, CONTRIBUTING
 
+### SEO der Projektseite
+- Titel und Beschreibungen in suchmaschinengerechter Länge, kanonische URLs, hreflang DE/EN mit x-default
+- Open Graph und Twitter-Karten mit Bildmaßen und Alt-Text, Favicon als SVG, Apple-Touch-Icon
+- strukturierte Daten: SoftwareApplication (kostenlos, Altersgruppe 8–14, Bildung) und FAQPage
+- FAQ um „Was ist SolidCraft?“ und „Unterschied zu Tinkercad?“ erweitert
+- Screenshots als WebP (rund 60 % kleiner), Hauptbild wird bevorzugt geladen, feste Bildmaße
+- sitemap.xml mit Sprachverknüpfungen, robots.txt, 404-Seite; `npm run build:seo` / `npm run check:seo`
+
 ### Behoben
 - Start-Knopf war in etwa jedem fünften frischen Browser unsichtbar, weil das Stylesheet nicht
   eingefügt wurde – der Kurs bringt sein Stylesheet jetzt selbst mit

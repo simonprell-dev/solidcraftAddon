@@ -3,22 +3,167 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>3D-Kurs für SolidCraft – 3D-Konstruieren lernen</title>
-<meta name="description" content="Kostenlose Browser-Erweiterung: ein geführter 3D-Konstruktionskurs für Kinder von 8 bis 14 – direkt im Web-CAD SolidCraft. Sechs druckbare Projekte, Zeige-Hand, automatisch abgehakte Aufgaben. Für Schule, AG und Zuhause.">
-<meta property="og:title" content="3D-Kurs für SolidCraft – 3D-Konstruieren lernen">
-<meta property="og:description" content="Geführter 3D-Konstruktionskurs für Kinder – direkt in SolidCraft. Sechs druckbare Projekte, kostenlos und Open Source.">
-<meta property="og:image" content="https://simonprell-dev.github.io/solidcraftAddon/social-preview.png">
-<meta property="og:type" content="website">
-<meta name="twitter:card" content="summary_large_image">
+<title>3D-Kurs für Kinder: 3D-Konstruieren lernen mit SolidCraft</title>
+<meta name="description" content="Kostenloser 3D-Konstruktionskurs für Kinder von 8 bis 14 direkt im Web-CAD SolidCraft: Zeige-Hand, automatisch geprüfte Aufgaben, 6 Projekte für den 3D-Drucker.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="Simon Prell">
 <meta name="theme-color" content="#E8762C">
-<link rel="icon" type="image/png" href="icon.png">
-<link rel="alternate" hreflang="en" href="en/">
+<link rel="canonical" href="https://simonprell-dev.github.io/solidcraftAddon/">
+<link rel="alternate" hreflang="de" href="https://simonprell-dev.github.io/solidcraftAddon/">
+<link rel="alternate" hreflang="en" href="https://simonprell-dev.github.io/solidcraftAddon/en/">
+<link rel="alternate" hreflang="x-default" href="https://simonprell-dev.github.io/solidcraftAddon/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="3D-Kurs für SolidCraft">
+<meta property="og:title" content="3D-Kurs für Kinder: 3D-Konstruieren lernen mit SolidCraft">
+<meta property="og:description" content="Kostenloser 3D-Konstruktionskurs für Kinder von 8 bis 14 direkt im Web-CAD SolidCraft: Zeige-Hand, automatisch geprüfte Aufgaben, 6 Projekte für den 3D-Drucker.">
+<meta property="og:url" content="https://simonprell-dev.github.io/solidcraftAddon/">
+<meta property="og:locale" content="de_DE">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image" content="https://simonprell-dev.github.io/solidcraftAddon/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="3D-Kurs für SolidCraft: Namensschild in SolidCraft, rechts das Kursfenster mit abgehakten Aufgaben">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="3D-Kurs für Kinder: 3D-Konstruieren lernen mit SolidCraft">
+<meta name="twitter:description" content="Kostenloser 3D-Konstruktionskurs für Kinder von 8 bis 14 direkt im Web-CAD SolidCraft: Zeige-Hand, automatisch geprüfte Aufgaben, 6 Projekte für den 3D-Drucker.">
+<meta name="twitter:image" content="https://simonprell-dev.github.io/solidcraftAddon/social-preview.png">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="icon" type="image/png" sizes="256x256" href="icon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="stylesheet" href="style.css">
+<link rel="preload" as="image" type="image/webp" href="img/de/screen-1.webp">
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "SoftwareApplication",
+ "name": "Einführungskurs für SolidCraft – 3D-Konstruieren lernen",
+ "alternateName": "3D-Kurs für SolidCraft",
+ "description": "Kostenloser 3D-Konstruktionskurs für Kinder von 8 bis 14 direkt im Web-CAD SolidCraft: Zeige-Hand, automatisch geprüfte Aufgaben, 6 Projekte für den 3D-Drucker.",
+ "url": "https://simonprell-dev.github.io/solidcraftAddon/",
+ "image": "https://simonprell-dev.github.io/solidcraftAddon/icon.png",
+ "screenshot": [
+  "https://simonprell-dev.github.io/solidcraftAddon/img/de/screen-1.png",
+  "https://simonprell-dev.github.io/solidcraftAddon/img/de/screen-3.png",
+  "https://simonprell-dev.github.io/solidcraftAddon/img/de/screen-4.png",
+  "https://simonprell-dev.github.io/solidcraftAddon/img/de/screen-5.png"
+ ],
+ "applicationCategory": "EducationalApplication",
+ "applicationSubCategory": "3D-Konstruktion (CAD) für Kinder",
+ "operatingSystem": "Windows, macOS, Linux, ChromeOS",
+ "browserRequirements": "Google Chrome, Microsoft Edge oder Brave (Chromium)",
+ "softwareVersion": "0.4.0",
+ "inLanguage": [
+  "de",
+  "en"
+ ],
+ "isAccessibleForFree": true,
+ "offers": {
+  "@type": "Offer",
+  "price": "0",
+  "priceCurrency": "EUR"
+ },
+ "audience": {
+  "@type": "EducationalAudience",
+  "educationalRole": "student",
+  "audienceType": "Kinder von 8 bis 14 Jahren"
+ },
+ "typicalAgeRange": "8-14",
+ "educationalUse": "Unterricht, AG, Makerspace, Zuhause",
+ "license": "https://github.com/simonprell-dev/solidcraftAddon/blob/main/LICENSE",
+ "downloadUrl": "https://github.com/simonprell-dev/solidcraftAddon/releases/latest",
+ "author": {
+  "@type": "Person",
+  "name": "Simon Prell",
+  "url": "https://github.com/simonprell-dev"
+ }
+}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "Was ist SolidCraft?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "SolidCraft ist ein kostenloses, quelloffenes CAD-Programm, das direkt im Browser läuft (app.solidcraft.io). Man skizziert, extrudiert und baut Körper wie in professioneller Konstruktionssoftware – ohne Installation."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Ist das ein offizielles SolidCraft-Produkt?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Nein. Es ist ein unabhängiges Open-Source-Projekt. Es nutzt die offizielle Browser-Schnittstelle von SolidCraft und verändert nichts an Ihren Modellen."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Für welches Alter ist der Kurs?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Für Kinder und Jugendliche von etwa 8 bis 14 Jahren. Drei Einstiegsstufen sorgen dafür, dass Anfänger und Fortgeschrittene passend starten."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Was ist der Unterschied zu Tinkercad?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Tinkercad setzt Modelle aus fertigen Grundkörpern zusammen. In SolidCraft lernen Kinder die Arbeitsweise echter CAD-Programme: Skizze zeichnen, extrudieren, Kanten abrunden, Teile passend konstruieren. Der Kurs macht diesen Einstieg kindgerecht."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Braucht man ein Konto?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Nein – weder für SolidCraft noch für die Erweiterung."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Funktioniert es auf Tablets oder Chromebooks?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Am besten am Computer mit Maus. Auf Chromebooks mit Chrome funktioniert die Erweiterung ebenfalls; Tablets werden nicht unterstützt."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Welche Sprachen gibt es?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Deutsch und Englisch. Der Kurs folgt der Sprache von SolidCraft; im Kursmenü lässt sie sich umstellen. Weitere Sprachen können ergänzt werden."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "Muss das Modell genau die vorgeschlagenen Maße haben?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Nein. Die Prüfungen sind großzügig – eigene Größen und Bauwege sind ausdrücklich erlaubt."
+   }
+  }
+ ]
+}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "WebSite",
+ "name": "3D-Kurs für SolidCraft",
+ "url": "https://simonprell-dev.github.io/solidcraftAddon/",
+ "inLanguage": "de"
+}
+</script>
 </head>
 <body>
 <header class="top">
     <div class="wrap">
-        <a class="brand" href="#"><img src="logo.svg" alt="">3D-Kurs für SolidCraft</a>
+        <a class="brand" href="#"><img src="logo.svg" width="32" height="32" alt="">3D-Kurs für SolidCraft</a>
         <nav>
             <a href="#funktionen">Funktionen</a>
             <a href="#kapitel">Kapitel</a>
@@ -46,7 +191,7 @@
                 <span class="badge">Deutsch &amp; Englisch</span><span class="badge">Open Source</span>
             </div>
         </div>
-        <div class="shot"><img src="img/de/screen-1.png" width="1280" height="800" alt="Die Hand zeigt in SolidCraft auf „Neue Skizze“, rechts das Kursfenster"></div>
+        <div class="shot"><picture><source srcset="img/de/screen-1.webp" type="image/webp"><img src="img/de/screen-1.png" width="1280" height="800" alt="Die Hand zeigt in SolidCraft auf „Neue Skizze“, rechts das Kursfenster" fetchpriority="high" decoding="async"></picture></div>
     </div>
 </div>
 
@@ -71,10 +216,10 @@
         <h2>So sieht es aus</h2>
         <p class="sub">Alle Bilder sind echte Aufnahmen der Erweiterung in SolidCraft.</p>
         <div class="gallery">
-            <figure><img src="img/de/screen-2.png" width="1280" height="800" alt="Stufenwahl mit drei Karten" loading="lazy"><figcaption>Drei Einstiegsstufen – vom Neuling bis zum Profi</figcaption></figure>
-            <figure><img src="img/de/screen-3.png" width="1280" height="800" alt="Fertiges Namensschild mit erhabenem Namen" loading="lazy"><figcaption>Aufgaben werden automatisch abgehakt</figcaption></figure>
-            <figure><img src="img/de/screen-4.png" width="1280" height="800" alt="Spielwürfel mit Augen" loading="lazy"><figcaption>Spielwürfel: Kreise ausschneiden, Kanten brechen</figcaption></figure>
-            <figure><img src="img/de/screen-5.png" width="1280" height="800" alt="Rakete mit drei Flossen" loading="lazy"><figcaption>Rakete: Profil drehen, Flossen im Kreis verteilen</figcaption></figure>
+            <figure><picture><source srcset="img/de/screen-2.webp" type="image/webp"><img src="img/de/screen-2.png" width="1280" height="800" alt="Stufenwahl mit drei Karten" loading="lazy" decoding="async"></picture><figcaption>Drei Einstiegsstufen – vom Neuling bis zum Profi</figcaption></figure>
+            <figure><picture><source srcset="img/de/screen-3.webp" type="image/webp"><img src="img/de/screen-3.png" width="1280" height="800" alt="Fertiges Namensschild mit erhabenem Namen" loading="lazy" decoding="async"></picture><figcaption>Aufgaben werden automatisch abgehakt</figcaption></figure>
+            <figure><picture><source srcset="img/de/screen-4.webp" type="image/webp"><img src="img/de/screen-4.png" width="1280" height="800" alt="Spielwürfel mit Augen" loading="lazy" decoding="async"></picture><figcaption>Spielwürfel: Kreise ausschneiden, Kanten brechen</figcaption></figure>
+            <figure><picture><source srcset="img/de/screen-5.webp" type="image/webp"><img src="img/de/screen-5.png" width="1280" height="800" alt="Rakete mit drei Flossen" loading="lazy" decoding="async"></picture><figcaption>Rakete: Profil drehen, Flossen im Kreis verteilen</figcaption></figure>
         </div>
     </div>
 </section>
@@ -149,7 +294,10 @@
         </div>
         <div>
             <h2>Häufige Fragen</h2>
+            <details><summary>Was ist SolidCraft?</summary><p>SolidCraft ist ein kostenloses, quelloffenes CAD-Programm, das direkt im Browser läuft (app.solidcraft.io). Man skizziert, extrudiert und baut Körper wie in professioneller Konstruktionssoftware – ohne Installation.</p></details>
             <details><summary>Ist das ein offizielles SolidCraft-Produkt?</summary><p>Nein. Es ist ein unabhängiges Open-Source-Projekt. Es nutzt die offizielle Browser-Schnittstelle von SolidCraft und verändert nichts an Ihren Modellen.</p></details>
+            <details><summary>Für welches Alter ist der Kurs?</summary><p>Für Kinder und Jugendliche von etwa 8 bis 14 Jahren. Drei Einstiegsstufen sorgen dafür, dass Anfänger und Fortgeschrittene passend starten.</p></details>
+            <details><summary>Was ist der Unterschied zu Tinkercad?</summary><p>Tinkercad setzt Modelle aus fertigen Grundkörpern zusammen. In SolidCraft lernen Kinder die Arbeitsweise echter CAD-Programme: Skizze zeichnen, extrudieren, Kanten abrunden, Teile passend konstruieren. Der Kurs macht diesen Einstieg kindgerecht.</p></details>
             <details><summary>Braucht man ein Konto?</summary><p>Nein – weder für SolidCraft noch für die Erweiterung.</p></details>
             <details><summary>Funktioniert es auf Tablets oder Chromebooks?</summary><p>Am besten am Computer mit Maus. Auf Chromebooks mit Chrome funktioniert die Erweiterung ebenfalls; Tablets werden nicht unterstützt.</p></details>
             <details><summary>Welche Sprachen gibt es?</summary><p>Deutsch und Englisch. Der Kurs folgt der Sprache von SolidCraft; im Kursmenü lässt sie sich umstellen. Weitere Sprachen können ergänzt werden.</p></details>

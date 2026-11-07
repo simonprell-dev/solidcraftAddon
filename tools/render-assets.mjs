@@ -41,6 +41,31 @@ fs.mkdirSync(p('docs/store'), {recursive: true});
 await logo(p('docs/store/haendlersymbol-128.png'), 128, 16);
 await logo(p('docs/store/edge-logo-300.png'), 300);
 await logo(p('docs/icon.png'), 256);
+await logo(p('docs/apple-touch-icon.png'), 180);
+
+// WebP-Fassungen der Screenshots für die GitHub-Seite (deutlich kleiner als PNG → schnelleres Laden)
+async function webp (src, dst) {
+    const data = 'data:image/png;base64,' + fs.readFileSync(src).toString('base64');
+    const b64 = await page.evaluate(async d => {
+        const img = new Image();
+        img.src = d;
+        await img.decode();
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth;
+        c.height = img.naturalHeight;
+        c.getContext('2d').drawImage(img, 0, 0);
+        return c.toDataURL('image/webp', 0.82).split(',')[1];
+    }, data);
+    fs.writeFileSync(dst, Buffer.from(b64, 'base64'));
+}
+console.log('WebP:');
+for (const lang of LANGS) {
+    for (let n = 1; n <= 5; n++) {
+        const src = p('docs/img', lang, `screen-${n}.png`);
+        if (fs.existsSync(src)) await webp(src, src.replace(/\.png$/, '.webp'));
+    }
+    console.log(`  docs/img/${lang}/screen-1…5.webp`);
+}
 
 if (mode !== 'icons') {
     const tpl = pathToFileURL(p('docs/store/templates/promo.html')).href;
