@@ -1,5 +1,24 @@
 # Änderungen
 
+## 0.4.0 – 2026-11-07
+
+### Neu
+- Logo (`docs/logo.svg`) und daraus erzeugte Symbole
+- GitHub-Projektseite auf Deutsch und Englisch mit echten Screenshots, Datenschutzerklärungen
+- Flyer für Lehrkräfte als PDF (DE/EN)
+- Store-Unterlagen für Chrome Web Store und Edge Add-ons: Texte, Screenshots, Werbekacheln
+- `npm run screenshots`, `npm run assets`, `npm run pack`; GitHub-Workflows „Prüfen“ und „Release“
+- Issue- und PR-Vorlagen, CONTRIBUTING
+
+### Behoben
+- Start-Knopf war in etwa jedem fünften frischen Browser unsichtbar, weil das Stylesheet nicht
+  eingefügt wurde – der Kurs bringt sein Stylesheet jetzt selbst mit
+- Kurs fehlte manchmal ganz: Beim Browserstart wurden die Skripte ab- und neu angemeldet; ein Tab, der
+  in dieser Lücke lud (z. B. wiederhergestellt), bekam keinen Kurs. Jetzt werden nur Änderungen
+  registriert, nacheinander, und offene SolidCraft-Tabs bekommen den Kurs nach Installation oder
+  Einschalten sofort
+- Kurzbeschreibung der Erweiterung auf die Store-Grenze von 132 Zeichen gekürzt
+
 ## 0.3.0 – 2026-11-07
 
 ### Neu

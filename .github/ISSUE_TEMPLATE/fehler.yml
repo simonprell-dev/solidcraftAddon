@@ -1,0 +1,34 @@
+name: Fehler melden / Report a bug
+description: Etwas funktioniert nicht wie erwartet / Something doesn't work as expected
+labels: [fehler]
+body:
+  - type: textarea
+    id: was
+    attributes:
+      label: Was ist passiert? / What happened?
+      description: Kapitel und Schritt helfen sehr (z. B. „Kapitel 3, Schritt 4“). / Chapter and step help a lot.
+    validations:
+      required: true
+  - type: textarea
+    id: erwartet
+    attributes:
+      label: Was hättest du erwartet? / What did you expect?
+  - type: input
+    id: browser
+    attributes:
+      label: Browser und Version / Browser and version
+      placeholder: z. B. Chrome 140, Edge 140, Brave
+  - type: input
+    id: version
+    attributes:
+      label: Version der Erweiterung / Extension version
+      placeholder: siehe chrome://extensions
+  - type: dropdown
+    id: sprache
+    attributes:
+      label: Sprache / Language
+      options: [Deutsch, English]
+  - type: textarea
+    id: bild
+    attributes:
+      label: Screenshot (optional)

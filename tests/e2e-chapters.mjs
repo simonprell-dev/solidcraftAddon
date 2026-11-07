@@ -158,7 +158,7 @@ try {
     const bodies = async () => (await call('document.inspect', {})).bodies.map(b => b.name);
     await call('ui.home', {open: false});
 
-    // Start-Knopf: bei Bedarf erneut klicken (ein seltener verlorener Klick ließ sich nicht nachstellen).
+    // Start-Knopf: zur Sicherheit bis zu dreimal klicken (Ursache früherer Fehlschläge war fehlendes CSS, behoben in 0.4.0).
     for (let i = 0; i < 3 && !(await page.$('.sk-level-neuling')); i++) {
         await page.click('.sk-launcher');
         await page.waitForSelector('.sk-level-neuling', {visible: true, timeout: 5000}).catch(() => null);

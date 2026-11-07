@@ -1,0 +1,19 @@
+name: Kursidee / Course idea
+description: Ein neues Projekt, Kapitel oder eine Verbesserung vorschlagen / Suggest a new project, chapter or improvement
+labels: [idee]
+body:
+  - type: textarea
+    id: idee
+    attributes:
+      label: Was soll gebaut werden? / What should be built?
+    validations:
+      required: true
+  - type: textarea
+    id: werkzeuge
+    attributes:
+      label: Welche Werkzeuge lernt man dabei? / Which tools does it teach?
+  - type: dropdown
+    id: stufe
+    attributes:
+      label: Für welche Stufe? / Which level?
+      options: [Neuling / Beginner, Schon mal ausprobiert / Tried it, Ich kenne mich aus / Pro]

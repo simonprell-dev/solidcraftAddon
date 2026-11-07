@@ -1,8 +1,22 @@
-# Einführungskurs für SolidCraft – 3D-Konstruieren auf Deutsch
+<p align="center"><img src="docs/logo.svg" width="96" alt=""></p>
+
+# Einführungskurs für SolidCraft – 3D-Konstruieren lernen
+
+[![Prüfen](https://github.com/simonprell-dev/solidcraftAddon/actions/workflows/check.yml/badge.svg)](https://github.com/simonprell-dev/solidcraftAddon/actions/workflows/check.yml)
+[![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-orange.svg)](LICENSE)
+[![Projektseite](https://img.shields.io/badge/Projektseite-GitHub%20Pages-E8762C.svg)](https://simonprell-dev.github.io/solidcraftAddon/)
+
+**[Projektseite](https://simonprell-dev.github.io/solidcraftAddon/)** ·
+**[English](https://simonprell-dev.github.io/solidcraftAddon/en/)** ·
+**[Flyer (PDF)](docs/flyer-de.pdf)** ·
+**[Download](https://github.com/simonprell-dev/solidcraftAddon/releases/latest)** ·
+**[Datenschutz](https://simonprell-dev.github.io/solidcraftAddon/datenschutz.html)**
 
 Eine kostenlose Browser-Erweiterung für Chrome, Edge und Brave, die Kinder von 8 bis 14 Jahren
 Schritt für Schritt durch das 3D-Konstruieren in [SolidCraft](https://app.solidcraft.io/) führt –
-direkt im Editor, auf Deutsch, ohne Konto.
+direkt im Editor, auf Deutsch oder Englisch, ohne Konto.
+
+<p align="center"><img src="docs/img/de/screen-3.png" width="720" alt="Fertiges Namensschild in SolidCraft, rechts das Kursfenster mit abgehakten Aufgaben"></p>
 
 Sie funktioniert wie der [Einführungskurs für Scratch](https://simonprell-dev.github.io/scratchExtention/):
 
@@ -93,7 +107,21 @@ npm run e2e:english   # Kurs auf Englisch, Sprachwahl im Menü, Kurs folgt der S
 `npm run e2e` braucht Edge oder Chromium: Google Chrome ab Version 137 lädt entpackte
 Erweiterungen nicht mehr per Startparameter. Mit `HEADFUL=1` kann man zuschauen.
 
-Neue Kapitel schreibt man mit dem Skill [`.claude/skills/kurs-kapitel`](.claude/skills/kurs-kapitel/SKILL.md).
+Mitmachen: siehe [CONTRIBUTING.md](CONTRIBUTING.md). Neue Kapitel schreibt man mit dem Skill [`.claude/skills/kurs-kapitel`](.claude/skills/kurs-kapitel/SKILL.md).
+
+## Projektseite, Store und Werbung
+
+| Was | Wo |
+|---|---|
+| GitHub-Seite (DE/EN) | [`docs/index.html`](docs/index.html), [`docs/en/index.html`](docs/en/index.html) – GitHub Pages aus `main` / `docs` |
+| Datenschutzerklärung | [`docs/datenschutz.html`](docs/datenschutz.html), [`docs/en/privacy.html`](docs/en/privacy.html) |
+| Flyer für Lehrkräfte | [`docs/flyer-de.pdf`](docs/flyer-de.pdf), [`docs/flyer-en.pdf`](docs/flyer-en.pdf) (Vorlage `docs/flyer.html`) |
+| Logo | [`docs/logo.svg`](docs/logo.svg) → alle Symbole mit `npm run icons` |
+| Store-Texte und -Bilder | [`docs/store/STORE-TEXTE.md`](docs/store/STORE-TEXTE.md), `docs/store/de/`, `docs/store/en/` |
+| Pakete | `npm run pack` → `dist/solidcraft-kurs-<version>-store.zip` (Store) und `…zip` (manuell) |
+
+Bilder neu erzeugen: `npm run screenshots` (echte Aufnahmen in SolidCraft, DE und EN) und danach
+`npm run assets` (Werbekacheln, Vorschaubilder, Flyer-PDFs, Store-Screenshots).
 
 ## Lizenz
 

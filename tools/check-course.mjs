@@ -70,11 +70,23 @@ export function checkLanguages () {
     return problems;
 }
 
+// Grenzen des Chrome Web Store: Name ≤ 75, Zusammenfassung (manifest description) ≤ 132 Zeichen.
+export function checkStoreLimits () {
+    const problems = [];
+    for (const l of fs.readdirSync(path.join(root, '_locales'))) {
+        const m = JSON.parse(fs.readFileSync(path.join(root, '_locales', l, 'messages.json'), 'utf8'));
+        const len = k => [...(m[k] ? m[k].message : '')].length;
+        if (len('extName') > 75) problems.push(`_locales/${l}: extName hat ${len('extName')} Zeichen (max. 75)`);
+        if (len('extDescription') > 132) problems.push(`_locales/${l}: extDescription hat ${len('extDescription')} Zeichen (max. 132)`);
+    }
+    return problems;
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
     const window = {};
     new Function('window', fs.readFileSync(path.join(root, 'course/course-data.js'), 'utf8'))(window);
     const course = window.SolidcraftKursCourse;
-    const problems = [...checkCourse(course, knownCommands()), ...checkLanguages()];
+    const problems = [...checkCourse(course, knownCommands()), ...checkLanguages(), ...checkStoreLimits()];
     problems.forEach(p => console.log(p));
     const steps = course.chapters.reduce((n, ch) => n + ch.steps.length, 0);
     console.log(problems.length ? `${problems.length} Probleme` : `Kurs ok: ${course.chapters.length} Kapitel, ${steps} Schritte, Sprachen vollständig.`);

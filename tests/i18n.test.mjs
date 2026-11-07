@@ -80,3 +80,8 @@ test('Kurs-Check prüft alle Sprachen und die _locales-Dateien', async () => {
     const {checkLanguages} = await import('../tools/check-course.mjs');
     assert.deepEqual(checkLanguages(), []);
 });
+
+test('Store-Grenzen: Name ≤ 75 und Kurzbeschreibung ≤ 132 Zeichen in jeder Sprache', async () => {
+    const {checkStoreLimits} = await import('../tools/check-course.mjs');
+    assert.deepEqual(checkStoreLimits(), []);
+});

@@ -754,6 +754,7 @@
     }
 
     async function step () {
+        window.SolidcraftKursStyle.ensure();
         pollAppLanguage();
         updateLauncher();
         if (!state.open) {

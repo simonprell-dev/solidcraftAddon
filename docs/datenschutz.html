@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Datenschutzerklärung – 3D-Kurs für SolidCraft</title>
+<meta name="theme-color" content="#E8762C">
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="alternate" hreflang="en" href="en/privacy.html">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+    <div class="wrap">
+        <a class="brand" href="./"><img src="logo.svg" alt="">3D-Kurs für SolidCraft</a>
+        <nav><a href="./">Startseite</a><a class="lang" href="en/privacy.html" hreflang="en">English</a></nav>
+    </div>
+</header>
+<section>
+    <div class="wrap legal">
+        <h1>Datenschutzerklärung</h1>
+        <p>Stand: 7. November 2026 · gilt für die Browser-Erweiterung „Einführungskurs für SolidCraft“ (3D-Kurs für SolidCraft).</p>
+
+        <h2>Kurz gesagt</h2>
+        <p>Die Erweiterung erhebt <b>keine personenbezogenen Daten</b>, braucht <b>kein Konto</b>, sendet <b>nichts an Server</b>
+            und enthält <b>keine Werbung und kein Tracking</b>. Alles, was sie speichert, bleibt in Ihrem Browser.</p>
+
+        <h2>Was die Erweiterung liest</h2>
+        <p>Die Erweiterung läuft ausschließlich auf <code>app.solidcraft.io</code>. Um Aufgaben abzuhaken und die Zeige-Hand
+            zu platzieren, liest sie über die offizielle Browser-Schnittstelle von SolidCraft (<code>window.solidcraft</code>)
+            den Zustand der geöffneten Seite: welches Werkzeug oder welcher Dialog offen ist, wo die Buttons liegen, welche
+            Skizzen und Körper das Modell enthält und deren Maße sowie die Spracheinstellung von SolidCraft.
+            Diese Informationen werden nur im Browser ausgewertet und <b>nicht übertragen oder gespeichert</b>.
+            Die Erweiterung verändert Ihre Modelle nicht.</p>
+
+        <h2>Was die Erweiterung speichert</h2>
+        <ul>
+            <li><b>Im lokalen Speicher der SolidCraft-Seite</b> (<code>localStorage</code>, Schlüssel <code>solidcraft-kurs:v1</code>):
+                gewählte Stufe und Sprache, erledigte Schritte und Aufgaben, Lage des Kursfensters sowie technische Merkwerte für die
+                Prüfungen (z. B. Anzahl der Körper zu Beginn eines Schritts).</li>
+            <li><b>Im Speicher der Erweiterung</b> (<code>chrome.storage.local</code>): ob die Erweiterung eingeschaltet ist und ob ein
+                Zurücksetzen des Lernfortschritts aussteht.</li>
+        </ul>
+        <p>Diese Daten verlassen Ihr Gerät nicht. Sie lassen sich jederzeit löschen: Rechtsklick auf das Symbol der Erweiterung →
+            „Lernfortschritt zurücksetzen“, oder durch Entfernen der Erweiterung bzw. Löschen der Websitedaten von
+            <code>app.solidcraft.io</code>.</p>
+
+        <h2>Berechtigungen</h2>
+        <ul>
+            <li><code>scripting</code> – um den Kurs auf app.solidcraft.io einzublenden (abschaltbar) und den Fortschritt auf Wunsch zurückzusetzen.</li>
+            <li><code>storage</code> – für die zwei Einstellungen oben.</li>
+            <li><code>contextMenus</code> – für das Rechtsklick-Menü am Symbol.</li>
+            <li>Zugriff auf <code>https://app.solidcraft.io/*</code> – die einzige Seite, auf der die Erweiterung arbeitet.</li>
+        </ul>
+
+        <h2>Keine Weitergabe</h2>
+        <p>Es werden keine Daten verkauft, an Dritte weitergegeben oder für andere Zwecke als den Kurs verwendet.
+            Die Erweiterung lädt keinen Code aus dem Internet nach.</p>
+
+        <h2>SolidCraft und diese Website</h2>
+        <p>SolidCraft ist ein eigenständiges Angebot von Tangency Labs; für SolidCraft gelten dessen eigene Datenschutzhinweise.
+            Diese Projektseite wird von GitHub Pages bereitgestellt; GitHub kann dabei technisch notwendige Zugriffsdaten
+            (z. B. IP-Adressen) verarbeiten – siehe die Datenschutzerklärung von GitHub.</p>
+
+        <h2>Kinder</h2>
+        <p>Die Erweiterung richtet sich an Kinder und Jugendliche von etwa 8 bis 14 Jahren. Da sie keine personenbezogenen Daten
+            erhebt, werden auch keine Daten von Kindern verarbeitet.</p>
+
+        <h2>Kontakt</h2>
+        <p>Verantwortlich: Simon Prell. Fragen und Hinweise bitte über
+            <a href="https://github.com/simonprell-dev/solidcraftAddon/issues">GitHub-Issues</a>.</p>
+    </div>
+</section>
+<footer><div class="wrap"><div>3D-Kurs für SolidCraft · Open Source (MIT)</div><div><a href="./">Startseite</a> · <a href="en/privacy.html">English</a></div></div></footer>
+</body>
+</html>

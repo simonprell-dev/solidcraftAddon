@@ -1,0 +1,115 @@
+<!doctype html>
+<!-- Flyer für Lehrkräfte, eine A4-Seite. ?lang=de|en. PDF: npm run assets → docs/flyer-de.pdf, flyer-en.pdf -->
+<html>
+<head>
+<meta charset="utf-8">
+<title>Flyer – 3D-Kurs für SolidCraft</title>
+<style>
+@page { size: A4; margin: 0; }
+:root { --orange: #E8762C; --orange-dark: #B85A1C; --ink: #1F2430; --muted: #5F6675; --soft: #FFF4EA; }
+* { box-sizing: border-box; margin: 0; }
+html, body { width: 210mm; }
+body { font: 9.8pt/1.4 "Segoe UI", system-ui, Arial, sans-serif; color: var(--ink); background: #fff; }
+.page { width: 210mm; height: 297mm; display: flex; flex-direction: column; overflow: hidden; }
+header {
+    background: linear-gradient(135deg, #F59A4A, #D9621C); color: #fff;
+    padding: 11mm 14mm 8mm; display: flex; gap: 7mm; align-items: center;
+}
+header img { width: 26mm; height: 26mm; }
+header h1 { font-size: 24pt; line-height: 1.05; font-weight: 800; }
+header p { font-size: 11.5pt; margin-top: 2mm; font-weight: 600; opacity: .95; }
+main { padding: 6mm 14mm 0; flex: 1; display: flex; flex-direction: column; gap: 4.5mm; }
+h2 { font-size: 12pt; color: var(--orange-dark); margin-bottom: 2mm; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 7mm; align-items: center; }
+.shot { border-radius: 3mm; overflow: hidden; border: .6mm solid #eee; }
+.shot img { display: block; width: 100%; }
+ul { padding-left: 5mm; }
+li { margin-bottom: .8mm; }
+.projects { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; }
+.project { background: var(--soft); border-radius: 3mm; padding: 3mm; }
+.project b { display: block; font-size: 11pt; }
+.project span { color: var(--muted); font-size: 9pt; }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; counter-reset: s; }
+.step { border: .5mm solid #F2D2B8; border-radius: 3mm; padding: 3mm 3mm 3mm 11mm; position: relative; }
+.step::before { counter-increment: s; content: counter(s); position: absolute; left: 3mm; top: 3mm;
+    width: 6mm; height: 6mm; border-radius: 50%; background: var(--orange); color: #fff;
+    font-weight: 800; text-align: center; line-height: 6mm; font-size: 9.5pt; }
+footer { padding: 4mm 14mm 7mm; font-size: 9pt; color: var(--muted); display: flex; justify-content: space-between; gap: 6mm; border-top: .5mm solid #f0e4da; margin-top: 4mm; }
+footer b { color: var(--ink); }
+.url { font-size: 11.5pt; color: var(--orange-dark); font-weight: 800; }
+</style>
+</head>
+<body>
+<div class="page" id="page"></div>
+<script>
+const lang = new URLSearchParams(location.search).get('lang') || 'de';
+const T = {
+    de: {
+        title: '3D-Konstruieren lernen –<br>mit dem Kurs für SolidCraft',
+        sub: 'Kostenlose Browser-Erweiterung · Kinder von 8 bis 14 · Schule, AG und Zuhause',
+        whatH: 'Was ist das?',
+        what: '<p>Ein geführter Kurs direkt im kostenlosen Web-CAD <b>SolidCraft</b>. Eine animierte Hand zeigt, wo geklickt wird. ' +
+            'Die Erweiterung erkennt selbst, ob die Skizze gezeichnet oder der Körper extrudiert ist, und hakt die Aufgabe ab.</p>',
+        why: ['Kein Konto, keine Installation von Software – nur Browser und Erweiterung',
+            'Jedes Kapitel endet mit einem <b>druckbaren</b> Projekt (STL-Export)',
+            'Drei Einstiegsstufen, alle Kapitel jederzeit erreichbar',
+            'Deutsch und Englisch – folgt der Sprache von SolidCraft'],
+        projH: 'Sechs Projekte – von leicht bis knifflig',
+        projects: [['🏷️ Namensschild', 'Skizze, Extrudieren, Text'], ['🔑 Schlüsselanhänger', 'Vollrundung, Bohrung'],
+            ['🎲 Spielwürfel', 'Kreis, Ausschneiden, Fase'], ['✏️ Stifteköcher', 'Hülle, mehrere Körper'],
+            ['📦 Box mit Deckel', 'Passung und Toleranz'], ['🚀 Rakete', 'Drehen, Muster']],
+        stepsH: 'So geht’s los',
+        steps: ['Erweiterung installieren (Chrome, Edge oder Brave)', 'Auf das Symbol klicken – SolidCraft öffnet sich',
+            'Unten auf „🎓 3D-Kurs starten“ klicken und Stufe wählen'],
+        teachH: 'Für Lehrkräfte',
+        teach: ['Fortschritt bleibt im Browser; Zurücksetzen per Rechtsklick aufs Symbol – praktisch an geteilten PCs',
+            'Datenschutzfreundlich: keine Daten, keine Server, kein Tracking',
+            'Open Source (MIT) – Kapitel lassen sich ergänzen'],
+        foot: 'Unabhängiges Projekt, kein offizielles Produkt von SolidCraft.',
+        more: 'Mehr Infos und Installation:'
+    },
+    en: {
+        title: 'Learn 3D design –<br>with the course for SolidCraft',
+        sub: 'Free browser extension · kids aged 8 to 14 · school, clubs and home',
+        whatH: 'What is it?',
+        what: '<p>A guided course right inside the free web CAD <b>SolidCraft</b>. An animated hand shows where to click. ' +
+            'The extension notices by itself when the sketch is drawn or the body is extruded, and ticks off the task.</p>',
+        why: ['No account, no software to install – just the browser and the extension',
+            'Every chapter ends with a <b>printable</b> project (STL export)',
+            'Three starting levels, every chapter always available',
+            'English and German – follows SolidCraft’s language'],
+        projH: 'Six projects – from easy to tricky',
+        projects: [['🏷️ Name tag', 'Sketch, extrude, text'], ['🔑 Keychain', 'Fillet, hole'],
+            ['🎲 Game die', 'Circle, cut, chamfer'], ['✏️ Pencil holder', 'Shell, several bodies'],
+            ['📦 Box with lid', 'Fit and clearance'], ['🚀 Rocket', 'Revolve, pattern']],
+        stepsH: 'Getting started',
+        steps: ['Install the extension (Chrome, Edge or Brave)', 'Click its icon – SolidCraft opens',
+            'Click “🎓 Start 3D course” at the bottom and choose a level'],
+        teachH: 'For teachers',
+        teach: ['Progress stays in the browser; reset it by right-clicking the icon – handy on shared PCs',
+            'Privacy-friendly: no data, no servers, no tracking',
+            'Open source (MIT) – you can add chapters'],
+        foot: 'Independent project, not an official SolidCraft product.',
+        more: 'More info and installation:'
+    }
+}[lang];
+const url = lang === 'de' ? 'simonprell-dev.github.io/solidcraftAddon' : 'simonprell-dev.github.io/solidcraftAddon/en';
+document.documentElement.lang = lang;
+document.getElementById('page').innerHTML = `
+<header><img src="logo.svg" alt=""><div><h1>${T.title}</h1><p>${T.sub}</p></div></header>
+<main>
+  <div class="cols">
+    <div><h2>${T.whatH}</h2>${T.what}<ul>${T.why.map(x => `<li>${x}</li>`).join('')}</ul></div>
+    <div class="shot"><img src="img/${lang}/screen-1.png" alt=""></div>
+  </div>
+  <div><h2>${T.projH}</h2><div class="projects">${T.projects.map(([a, b]) => `<div class="project"><b>${a}</b><span>${b}</span></div>`).join('')}</div></div>
+  <div class="cols">
+    <div class="shot"><img src="img/${lang}/screen-3.png" alt=""></div>
+    <div><h2>${T.teachH}</h2><ul>${T.teach.map(x => `<li>${x}</li>`).join('')}</ul></div>
+  </div>
+  <div><h2>${T.stepsH}</h2><div class="steps">${T.steps.map(x => `<div class="step">${x}</div>`).join('')}</div></div>
+</main>
+<footer><div>${T.more}<br><span class="url">${url}</span></div><div style="text-align:right">${T.foot}<br>MIT · Open Source</div></footer>`;
+</script>
+</body>
+</html>

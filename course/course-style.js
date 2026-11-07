@@ -1,3 +1,15 @@
+/*
+ * Stylesheet des Kurses (Kursfenster, Hand, Sprechblase, Konfetti, Start-Knopf).
+ *
+ * Der Kurs fügt es selbst als <style id="sk-style"> ein, statt sich auf das Einfügen per
+ * registerContentScripts zu verlassen: Das ging in Tests in etwa jedem fünften frischen Browser
+ * schief (Skripte liefen, CSS fehlte – der Start-Knopf lag dann unsichtbar unter SolidCraft).
+ * ensure() prüft das bei jedem Takt erneut.
+ */
+(function () {
+    'use strict';
+
+    const CSS = `
 /* Einführungskurs für SolidCraft – Kursfenster, Hand, Sprechblase, Konfetti.
    SolidCraft zeichnet alles in ein <canvas>; alles hier liegt darüber. */
 
@@ -200,3 +212,16 @@
 @media (prefers-reduced-motion: reduce) {
     .sk-ring, .sk-hand, .sk-pulse, .sk-confetti { animation: none; }
 }
+`;
+
+    function ensure () {
+        if (document.getElementById('sk-style')) return;
+        const style = document.createElement('style');
+        style.id = 'sk-style';
+        style.textContent = CSS;
+        (document.head || document.documentElement).appendChild(style);
+    }
+
+    ensure();
+    window.SolidcraftKursStyle = {ensure};
+})();

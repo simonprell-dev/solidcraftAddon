@@ -1,0 +1,94 @@
+<!doctype html>
+<!--
+  Vorlage für Werbekacheln und Vorschaubild. tools/render-assets.mjs öffnet sie mit
+  ?size=small|large|social&lang=de|en und speichert ein PNG in genau dieser Größe.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+:root { --orange: #E8762C; --orange-dark: #B85A1C; --ink: #1F2430; --cream: #FFF4EA; }
+* { box-sizing: border-box; margin: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body {
+    font-family: "Segoe UI", system-ui, "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(135deg, #F59A4A 0%, #D9621C 100%);
+    color: #fff; position: relative;
+}
+.grid {
+    position: absolute; inset: 0; opacity: .14;
+    background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px);
+    background-size: 28px 28px;
+}
+.wrap { position: relative; height: 100%; display: flex; align-items: center; }
+.text { flex: none; }
+.logo { display: block; }
+h1 { font-weight: 800; line-height: 1.05; letter-spacing: -.01em; }
+.tag { opacity: .95; font-weight: 600; }
+.pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35); border-radius: 999px; font-weight: 700; }
+.shot {
+    border-radius: 14px; overflow: hidden; background: #1c1f26;
+    box-shadow: 0 18px 50px rgba(60, 20, 0, .45); border: 3px solid rgba(255,255,255,.85);
+}
+.shot img { display: block; width: 100%; }
+
+/* klein 440 × 280: nur Logo, Name, ein Satz */
+.small .wrap { padding: 0 30px; gap: 22px; }
+.small .logo { width: 110px; height: 110px; }
+.small h1 { font-size: 34px; }
+.small .tag { font-size: 17px; margin-top: 8px; }
+.small .shot, .small .pills { display: none; }
+
+/* groß 1400 × 560 */
+.large .wrap { padding: 0 70px; gap: 56px; }
+.large .text { width: 560px; }
+.large .logo { width: 120px; height: 120px; margin-bottom: 22px; }
+.large h1 { font-size: 58px; }
+.large .tag { font-size: 25px; margin: 14px 0 22px; }
+.large .pill { font-size: 17px; padding: 7px 14px; }
+.large .shot { width: 680px; transform: rotate(-1.5deg); }
+
+/* Vorschaubild 1280 × 640 (GitHub, soziale Medien) */
+.social .wrap { padding: 0 60px; gap: 44px; }
+.social .text { width: 500px; }
+.social .logo { width: 104px; height: 104px; margin-bottom: 20px; }
+.social h1 { font-size: 52px; }
+.social .tag { font-size: 23px; margin: 12px 0 20px; }
+.social .pill { font-size: 16px; padding: 6px 13px; }
+.social .shot { width: 640px; transform: rotate(-1.5deg); }
+</style>
+</head>
+<body>
+<div class="grid"></div>
+<div class="wrap">
+    <div class="text">
+        <img class="logo" src="../../logo.svg" alt="">
+        <h1 id="title"></h1>
+        <p class="tag" id="tag"></p>
+        <div class="pills" id="pills"></div>
+    </div>
+    <div class="shot"><img id="shot" alt=""></div>
+</div>
+<script>
+const q = new URLSearchParams(location.search);
+const size = q.get('size') || 'large';
+const lang = q.get('lang') || 'de';
+document.body.className = size;
+const T = {
+    de: {title: '3D-Konstruieren<br>lernen', small: '3D-Kurs für<br>SolidCraft',
+        tag: 'Ein geführter Kurs für Kinder – direkt in SolidCraft.',
+        smallTag: 'Schritt für Schritt zum eigenen 3D-Druck',
+        pills: ['👆 Zeige-Hand', '✅ Automatisch abgehakt', '🖨️ 6 druckbare Projekte', '🌍 Deutsch · English']},
+    en: {title: 'Learn<br>3D design', small: '3D course for<br>SolidCraft',
+        tag: 'A guided course for kids – right inside SolidCraft.',
+        smallTag: 'Step by step to your own 3D print',
+        pills: ['👆 Pointing hand', '✅ Ticks off by itself', '🖨️ 6 printable projects', '🌍 English · Deutsch']}
+}[lang];
+document.getElementById('title').innerHTML = size === 'small' ? T.small : T.title;
+document.getElementById('tag').textContent = size === 'small' ? T.smallTag : T.tag;
+document.getElementById('pills').innerHTML = T.pills.map(p => `<span class="pill">${p}</span>`).join('');
+document.getElementById('shot').src = `../../img/${lang}/screen-3.png`;
+</script>
+</body>
+</html>

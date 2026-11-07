@@ -1,0 +1,39 @@
+name: Release
+
+# Ein Tag wie „v0.3.0“ erzeugt automatisch ein Release mit zwei ZIP-Dateien:
+#   solidcraft-kurs-X.Y.Z.zip         zum Installieren von Hand (Ordner mit README)
+#   solidcraft-kurs-X.Y.Z-store.zip   zum Hochladen im Chrome Web Store / Edge Add-ons
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Version im Manifest prüfen
+        run: |
+          v=$(node -p "require('./manifest.json').version")
+          test "v$v" = "$GITHUB_REF_NAME" || { echo "manifest.json hat Version $v, Tag ist $GITHUB_REF_NAME"; exit 1; }
+      - name: Prüfen
+        run: npm test && npm run check
+      - name: ZIPs packen
+        run: npm run pack
+      - name: Changelog-Abschnitt lesen
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          awk -v v="$v" '/^## /{p = index($0, v) > 0; next} p' CHANGELOG.md > notes.md
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/solidcraft-kurs-*.zip
+          body_path: notes.md

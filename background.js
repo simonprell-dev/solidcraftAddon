@@ -21,6 +21,7 @@ const PAGE_SCRIPTS = {
     id: 'solidcraft-kurs',
     matches: [APP_TABS],
     js: [
+        'course/course-style.js',
         'lib/solidcraft-access.js',
         'i18n/de.js',
         'i18n/en.js',
@@ -30,7 +31,6 @@ const PAGE_SCRIPTS = {
         'course/course-data.js',
         'course/course.js'
     ],
-    css: ['course/course.css'],
     runAt: 'document_idle',
     world: 'MAIN'
 };
@@ -51,14 +51,41 @@ async function isEnabled () {
     return enabled;
 }
 
+// Registrierungen nur ändern, wo nötig – nie „alles abmelden und neu anmelden“: Eine Seite, die
+// in dieser Lücke lädt (z. B. ein beim Browserstart wiederhergestellter Tab), bekäme sonst keinen
+// Kurs. Alle Änderungen laufen nacheinander (onInstalled und onStartup können gleichzeitig kommen).
+const sameScript = (a, b) => ['js', 'matches', 'runAt', 'world']
+    .every(k => JSON.stringify(a[k] || null) === JSON.stringify(b[k] || null));
+
+let queue = Promise.resolve();
+const serialized = fn => (queue = queue.then(fn, fn));
+
 async function applyEnabled (enabled) {
-    const registered = (await chrome.scripting.getRegisteredContentScripts()).map(s => s.id);
-    if (registered.length) await chrome.scripting.unregisterContentScripts({ids: registered});
-    await chrome.scripting.registerContentScripts(enabled ? [PAGE_SCRIPTS, RESET_SCRIPT] : [RESET_SCRIPT]);
+    const want = enabled ? [PAGE_SCRIPTS, RESET_SCRIPT] : [RESET_SCRIPT];
+    const have = await chrome.scripting.getRegisteredContentScripts();
+    const stale = have.filter(h => !want.some(w => w.id === h.id && sameScript(w, h))).map(h => h.id);
+    if (stale.length) await chrome.scripting.unregisterContentScripts({ids: stale});
+    const missing = want.filter(w => !have.some(h => h.id === w.id && sameScript(w, h)));
+    if (missing.length) await chrome.scripting.registerContentScripts(missing);
 
     await chrome.action.setBadgeText({text: enabled ? '' : msg('badgeOff')});
     await chrome.action.setBadgeBackgroundColor({color: '#7D8299'});
     await chrome.action.setTitle({title: msg(enabled ? 'titleOn' : 'titleOff')});
+}
+
+// Registrierte Skripte wirken erst beim nächsten Laden einer Seite. SolidCraft-Tabs, die schon
+// offen sind (Installation, Einschalten), bekommen den Kurs deshalb direkt.
+async function injectIntoOpenTabs () {
+    const tabs = await chrome.tabs.query({url: APP_TABS});
+    for (const tab of tabs) {
+        try {
+            const [probe] = await chrome.scripting.executeScript({
+                target: {tabId: tab.id}, world: 'MAIN', func: () => !!window.SolidcraftKurs
+            });
+            if (probe && probe.result) continue;
+            await chrome.scripting.executeScript({target: {tabId: tab.id}, world: 'MAIN', files: PAGE_SCRIPTS.js});
+        } catch (e) { /* Tab nicht erreichbar (z. B. verworfen) – lädt beim nächsten Öffnen ohnehin neu */ }
+    }
 }
 
 // ---------- Kontextmenü ----------
@@ -72,20 +99,27 @@ function createMenu (enabled) {
     });
 }
 
-async function setup () {
-    const enabled = await isEnabled();
-    createMenu(enabled);
-    await applyEnabled(enabled);
+function setup ({inject} = {}) {
+    return serialized(async () => {
+        const enabled = await isEnabled();
+        createMenu(enabled);
+        await applyEnabled(enabled);
+        if (enabled && inject) await injectIntoOpenTabs();
+    });
 }
 
-chrome.runtime.onInstalled.addListener(setup);
-chrome.runtime.onStartup.addListener(setup);
+chrome.runtime.onInstalled.addListener(() => setup({inject: true}));
+chrome.runtime.onStartup.addListener(() => setup());
 
 chrome.contextMenus.onClicked.addListener(async info => {
     if (info.menuItemId === 'enabled') {
         await chrome.storage.local.set({enabled: info.checked});
-        await applyEnabled(info.checked);
-        notifyTabs(msg(info.checked ? 'toastOn' : 'toastOff'));
+        await serialized(async () => {
+            await applyEnabled(info.checked);
+            if (info.checked) await injectIntoOpenTabs();
+        });
+        // Einschalten wirkt sofort; Ausschalten erst nach dem Neuladen (der Kurs läuft in der Seite).
+        if (!info.checked) notifyTabs(msg('toastOff'));
     } else if (info.menuItemId === 'reset') {
         await resetProgress();
     } else if (info.menuItemId === 'help') {

@@ -1,16 +1,44 @@
 {
-  "extName": {"message": "Einführungskurs für SolidCraft – 3D-Konstruieren lernen"},
-  "extDescription": {"message": "Geführter 3D-Konstruktionskurs für Kinder direkt im SolidCraft-Editor: Namensschild, Schlüsselanhänger, Würfel und mehr. Für Schule, AG und Zuhause."},
-  "actionTitle": {"message": "Einführungskurs für SolidCraft"},
-  "titleOn": {"message": "Einführungskurs für SolidCraft\nKlick: SolidCraft öffnen · Rechtsklick: Einstellungen"},
-  "titleOff": {"message": "Einführungskurs für SolidCraft (ausgeschaltet)\nRechtsklick zum Einschalten"},
-  "badgeOff": {"message": "AUS"},
-  "menuEnabled": {"message": "Erweiterung eingeschaltet"},
-  "menuReset": {"message": "Lernfortschritt zurücksetzen …"},
-  "menuHelp": {"message": "Hilfe und Anleitung"},
-  "toastOn": {"message": "Die Erweiterung ist eingeschaltet. Lade die Seite neu (F5), damit sie wirkt."},
-  "toastOff": {"message": "Die Erweiterung ist ausgeschaltet. Lade die Seite neu (F5), damit sie verschwindet."},
-  "confirmReset": {"message": "Lernfortschritt im Einführungskurs wirklich zurücksetzen?\n\nAlle abgehakten Schritte und die gewählte Stufe gehen verloren. Deine Konstruktionen bleiben erhalten."},
-  "toastResetLater": {"message": "Der Lernfortschritt wird zurückgesetzt, sobald du SolidCraft neu lädst (F5)."},
-  "toastReset": {"message": "Der Lernfortschritt wurde zurückgesetzt."}
+  "extName": {
+    "message": "Einführungskurs für SolidCraft – 3D-Konstruieren lernen"
+  },
+  "extDescription": {
+    "message": "Geführter 3D-Konstruktionskurs für Kinder – direkt im Web-CAD SolidCraft. Mit Zeige-Hand und Projekten für den 3D-Drucker."
+  },
+  "actionTitle": {
+    "message": "Einführungskurs für SolidCraft"
+  },
+  "titleOn": {
+    "message": "Einführungskurs für SolidCraft\nKlick: SolidCraft öffnen · Rechtsklick: Einstellungen"
+  },
+  "titleOff": {
+    "message": "Einführungskurs für SolidCraft (ausgeschaltet)\nRechtsklick zum Einschalten"
+  },
+  "badgeOff": {
+    "message": "AUS"
+  },
+  "menuEnabled": {
+    "message": "Erweiterung eingeschaltet"
+  },
+  "menuReset": {
+    "message": "Lernfortschritt zurücksetzen …"
+  },
+  "menuHelp": {
+    "message": "Hilfe und Anleitung"
+  },
+  "toastOn": {
+    "message": "Die Erweiterung ist eingeschaltet. Lade die Seite neu (F5), damit sie wirkt."
+  },
+  "toastOff": {
+    "message": "Die Erweiterung ist ausgeschaltet. Lade die Seite neu (F5), damit sie verschwindet."
+  },
+  "confirmReset": {
+    "message": "Lernfortschritt im Einführungskurs wirklich zurücksetzen?\n\nAlle abgehakten Schritte und die gewählte Stufe gehen verloren. Deine Konstruktionen bleiben erhalten."
+  },
+  "toastResetLater": {
+    "message": "Der Lernfortschritt wird zurückgesetzt, sobald du SolidCraft neu lädst (F5)."
+  },
+  "toastReset": {
+    "message": "Der Lernfortschritt wurde zurückgesetzt."
+  }
 }
