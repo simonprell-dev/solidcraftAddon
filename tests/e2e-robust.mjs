@@ -29,6 +29,8 @@ const browser = await puppeteer.launch({
 try {
     const page = await browser.newPage();
     page.on('dialog', d => d.accept()); // „Seite verlassen?“ bei ungespeichertem Design
+    page.on('pageerror', e => console.log('Seitenfehler:', e.message));
+    page.on('console', m => m.type() === 'error' && /course|kurs|solidcraft-access/i.test(m.location()?.url || '') && console.log('Konsole:', m.text()));
     const open = async () => {
         await page.waitForFunction(() => window.solidcraft && window.SolidcraftKurs, {timeout: 120000});
         await wait(2500);
@@ -129,6 +131,55 @@ try {
         await ex('sketch.text', {text: 'JO', at: [-30, -6], height: 12});
         log(await allDone(8000), 'Neuladen mitten im Schritt: Schritt bleibt lösbar');
     }
+
+    // 6) Zwei SolidCraft-Tabs: Fortschritt im einen erscheint im anderen.
+    const page2 = await browser.newPage();
+    page2.on('dialog', d => d.accept());
+    await page2.goto('https://app.solidcraft.io/', {waitUntil: 'domcontentloaded', timeout: 90000});
+    await page2.waitForFunction(() => window.SolidcraftKurs, {timeout: 120000});
+    await page2.waitForSelector('.sk-panel .sk-title', {timeout: 20000});
+    await page.bringToFront();
+    await page.evaluate(() => window.SolidcraftKurs.openChapter(0, 7));
+    const synced = await page2.waitForFunction(
+        () => document.querySelector('.sk-panel .sk-title')?.textContent === 'Bewundere dein Schild',
+        {timeout: 5000}).then(() => true, () => false);
+    log(synced, 'Zweiter Tab übernimmt den Fortschritt');
+    await page2.close();
+
+    // 7) Pokal-Ansicht übersteht Ein- und Ausklappen.
+    await page.evaluate(() => window.SolidcraftKurs.openChapter(0, 9));
+    await page.waitForSelector('.sk-next');
+    await page.click('.sk-next');
+    await page.waitForSelector('.sk-trophy');
+    await page.click('.sk-header-actions .sk-icon-btn:nth-child(2)'); // ▾
+    await page.waitForSelector('.sk-mini');
+    await page.click('.sk-header-actions .sk-icon-btn:nth-child(2)'); // ▴
+    log(await page.waitForSelector('.sk-trophy', {timeout: 2000}).then(() => true, () => false),
+        'Pokal bleibt nach Ein-/Ausklappen');
+
+    // 8) Übergang „Projekt sichern“ übersteht Neuladen.
+    const hasNext = await page.$$eval('.sk-footer .sk-btn-primary', b => b.length > 0);
+    if (hasNext) {
+        await page.click('.sk-footer .sk-btn-primary');
+        await page.waitForFunction(() => document.querySelector('.sk-panel .sk-title')?.textContent === 'Bevor es weitergeht');
+        await page.reload({waitUntil: 'domcontentloaded', timeout: 90000});
+        await open();
+        log(await page.waitForFunction(() => document.querySelector('.sk-panel .sk-title')?.textContent === 'Bevor es weitergeht',
+            {timeout: 8000}).then(() => true, () => false), 'Übergang „Projekt sichern“ übersteht Neuladen');
+    } else {
+        log(false, 'Übergang „Projekt sichern“: kein nächstes Kapitel vorhanden');
+    }
+
+    // 9) Nach ✕ verschwindet die Hand sofort und kommt nicht wieder.
+    await page.evaluate(() => window.SolidcraftKurs.openChapter(0, 2));
+    await page.waitForSelector('.sk-ring', {timeout: 4000}).catch(() => null);
+    await page.click('.sk-header-actions .sk-icon-btn:nth-child(3)'); // ✕
+    let ringSeen = false;
+    for (let i = 0; i < 10; i++) {
+        await wait(60);
+        if (await page.$('.sk-ring')) ringSeen = true;
+    }
+    log(!ringSeen, 'Nach ✕ keine Hand mehr');
 } catch (e) {
     failures++;
     console.log('✖ Abbruch:', e.message);

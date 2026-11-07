@@ -113,16 +113,24 @@ async function resetProgress () {
         await chrome.storage.local.set({resetPending: true});
         return;
     }
-    // Im ersten Tab nachfragen, damit nicht aus Versehen alles weg ist.
+    // Im ersten Tab nachfragen, damit nicht aus Versehen alles weg ist (Tab dafür nach vorn holen).
+    await chrome.tabs.update(tabs[0].id, {active: true}).catch(() => null);
     const [answer] = await chrome.scripting.executeScript({
         target: {tabId: tabs[0].id},
         world: 'MAIN',
         func: () => window.confirm('Lernfortschritt im Einführungskurs wirklich zurücksetzen?\n\n' +
             'Alle abgehakten Schritte und die gewählte Stufe gehen verloren. Deine Konstruktionen bleiben erhalten.')
-    }).catch(() => [{result: true}]);
-    if (!answer || !answer.result) return;
+    }).catch(() => [null]);
+    if (answer === null) {
+        // Rückfrage ging nicht (z. B. Tab schläft): nicht still zurücksetzen, sondern beim nächsten
+        // Laden von SolidCraft erledigen – und das ehrlich sagen.
+        await chrome.storage.local.set({resetPending: true});
+        notifyTabs('Der Lernfortschritt wird zurückgesetzt, sobald du SolidCraft neu lädst (F5).');
+        return;
+    }
+    if (!answer.result) return;
 
-    await Promise.all(tabs.map(tab => chrome.scripting.executeScript({
+    const results = await Promise.all(tabs.map(tab => chrome.scripting.executeScript({
         target: {tabId: tab.id},
         world: 'MAIN',
         args: [STATE_KEY],
@@ -133,7 +141,9 @@ async function resetProgress () {
             // Ein laufender Kurs (course.js) hält den Stand im Speicher und setzt sich selbst zurück.
             window.dispatchEvent(new CustomEvent('solidcraft-kurs-reset'));
         }
-    }).catch(() => null)));
+    }).then(() => true, () => false)));
+    // Ein Tab ließ sich nicht erreichen → dort beim nächsten Laden nachholen.
+    if (results.includes(false)) await chrome.storage.local.set({resetPending: true});
     notifyTabs('Der Lernfortschritt wurde zurückgesetzt.');
 }
 

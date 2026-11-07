@@ -35,7 +35,7 @@
 
     function defaultState () {
         return {started: false, open: false, collapsed: false, chapterId: chapters[0].id, step: 0,
-            done: {}, manual: {}, pos: null, transition: null, bases: {}};
+            done: {}, manual: {}, pos: null, transition: null, bases: {}, chapterBodies: {}};
     }
     function loadState () {
         let loaded = defaultState();
@@ -57,7 +57,7 @@
 
     // ---------- Laufzeit des aktuellen Schritts ----------
 
-    const run = {base: null, needBase: true, hintsOn: false, wasComplete: false, taskDone: [], view: 'step',
+    const run = {base: null, needBase: true, hintsOn: false, wasComplete: false, taskDone: [], view: state.transition ? 'transition' : 'step',
         snap: null, at: new Map()};
 
     const currentChapter = () => chapters[state.chapter];
@@ -323,12 +323,15 @@
             renderMenu(body);
         } else if (run.view === 'transition') {
             renderTransition(body);
+        } else if (run.view === 'done') {
+            renderDone(body);
         } else {
             renderStep(body, step);
         }
         panel.appendChild(body);
         if (run.view === 'step') panel.appendChild(renderFooter(step));
         if (run.view === 'transition') panel.appendChild(renderTransitionFooter());
+        if (run.view === 'done') panel.appendChild(renderDoneFooter());
         if (!wasReady) panel.appendChild(el('div', 'sk-loading', 'SolidCraft lädt noch …'));
         clampPanel();
         lastHintKey = '';
@@ -466,19 +469,24 @@
     }
 
     function showChapterDone () {
-        const nextChapter = chapters[state.chapter + 1];
         saveState();
         run.view = 'done';
         clearOverlay();
-        const body = panel.querySelector('.sk-body');
-        const footer = panel.querySelector('.sk-footer');
-        if (footer) footer.remove();
-        body.innerHTML = '';
+        renderPanel();
+        confetti();
+    }
+
+    function renderDone (body) {
+        const nextChapter = chapters[state.chapter + 1];
         body.appendChild(el('div', 'sk-trophy', '🏆'));
         body.appendChild(el('h3', 'sk-title sk-center', `Kapitel „${currentChapter().title}“ geschafft!`));
         body.appendChild(el('div', 'sk-text sk-center', nextChapter ?
             `<p>Stark! Bereit für das nächste Projekt: <b>${nextChapter.title}</b>?</p>` :
-            '<p>Du hast alle Kapitel geschafft, die es bisher gibt. Weitere Projekte kommen bald!</p>'));
+            '<p>Du hast den ganzen 3D-Kurs geschafft. Jetzt bist du ein echter Konstrukteur! 🚀</p>'));
+    }
+
+    function renderDoneFooter () {
+        const nextChapter = chapters[state.chapter + 1];
         const row = el('div', 'sk-footer');
         row.appendChild(button('sk-btn sk-btn-secondary', 'Zur Übersicht', '', () => {
             run.view = 'menu';
@@ -492,8 +500,7 @@
                 renderPanel();
             }));
         }
-        panel.appendChild(row);
-        confetti();
+        return row;
     }
 
     // ---------- Projekt sichern zwischen den Kapiteln ----------
@@ -699,7 +706,7 @@
             if (saved && saved.doc === snap.documentId) {
                 run.base = saved.base;
             } else {
-                run.base = C.makeBase(snap);
+                run.base = C.makeBase(snap, chapterIgnore(snap));
                 state.bases = {[id]: {doc: snap.documentId, base: run.base}};
                 saveState();
             }
@@ -711,7 +718,7 @@
         if (run.view === 'transition') {
             const t = transitionHint();
             const pt = t && await locate(t.target, t.hint, snap);
-            return pt ? drawPoint(pt) : clearOverlay();
+            return pt && state.open && run.view === 'transition' ? drawPoint(pt) : clearOverlay();
         }
         if (run.view !== 'step') return clearOverlay();
 
@@ -736,8 +743,21 @@
         const target = hint && hintTarget(hint, c);
         const pt = target && await locate(target, hint.text, snap, {search: hint.search});
         // Zwischendurch kann der Schritt gewechselt haben – dann nichts Altes zeichnen.
-        if (pt && run.view === 'step' && activeHint(c) === hint) drawPoint(pt);
+        if (pt && state.open && run.view === 'step' && activeHint(c) === hint) drawPoint(pt);
         else clearOverlay();
+    }
+
+    // Beim ersten Schritt eines Kapitels merken, welche Körper schon im Design liegen (z. B. vom
+    // vorigen Kapitel) – die Prüfungen des Kapitels sehen sie dann nicht.
+    function chapterIgnore (snap) {
+        const id = currentChapter().id;
+        let rec = state.chapterBodies[id];
+        if (state.step === 0 && (!rec || rec.doc !== snap.documentId)) {
+            rec = {doc: snap.documentId, names: ((snap.doc && snap.doc.bodies) || []).map(b => b.name)};
+            state.chapterBodies = {...state.chapterBodies, [id]: rec};
+            saveState();
+        }
+        return rec && rec.doc === snap.documentId ? rec.names : [];
     }
 
     function renderProgressPips () {
@@ -750,6 +770,24 @@
     window.addEventListener('resize', () => {
         clampPanel();
         lastHintKey = '';
+    });
+
+    // Ein anderer SolidCraft-Tab hat den Fortschritt gespeichert → hier übernehmen.
+    window.addEventListener('storage', e => {
+        if (e.key !== STATE_KEY || e.newValue === null) return;
+        const before = `${state.chapterId}|${state.step}|${state.transition}`;
+        const loaded = loadState();
+        Object.keys(state).forEach(key => delete state[key]);
+        Object.assign(state, loaded);
+        if (`${state.chapterId}|${state.step}|${state.transition}` === before) {
+            // Nur Haken oder Fensterlage geändert: neu zeichnen, nichts speichern.
+            lastResultsKey = '';
+            renderPanel();
+            return;
+        }
+        run.view = state.transition ? 'transition' : 'step';
+        if (state.transition) renderPanel();
+        else enterStep();
     });
 
     // Rechtsklick aufs Erweiterungs-Symbol → „Lernfortschritt zurücksetzen“ (background.js)

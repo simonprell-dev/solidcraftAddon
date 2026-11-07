@@ -144,9 +144,23 @@ try {
     log(await ringAt(top[0], top[1], 12), 'Schritt 6: Hand zeigt auf die Oberseite');
     await call('ui.click', {x: top[0], y: top[1]});
     log(await taskDone(0), 'Schritt 6: Skizze auf der Oberseite erkannt');
-    await wait(400);
-    log(['Wähle „Text“', 'Klicke auf „Erstellen ▾“', 'Öffne oben den Tab „Skizze“'].includes(await bubble()),
-        `Schritt 6: Hinweis zum Text-Werkzeug („${await bubble()}“)`);
+    const textHints = ['Wähle „Text“', 'Klicke auf „Erstellen ▾“', 'Öffne oben den Tab „Skizze“'];
+    await page.waitForFunction(t => t.includes(document.querySelector('.sk-bubble')?.textContent), {timeout: 3000}, textHints)
+        .catch(() => null);
+    log(textHints.includes(await bubble()), `Schritt 6: Hinweis zum Text-Werkzeug („${await bubble()}“)`);
+    if (!textHints.includes(await bubble())) {
+        console.log('  Diagnose:', await page.evaluate(async () => {
+            const K = window.SolidcraftKurs;
+            const c = window.SolidcraftKursContext.make(K.run.snap, K.run.base);
+            const step = window.SolidcraftKursCourse.chapters[0].steps[K.state.step];
+            const hints = step.hints.map(h => { try { return h.done(c); } catch (e) { return 'ERR ' + e.message; } });
+            const cmds = await window.SolidcraftKursAccess.commands();
+            return JSON.stringify({step: step.title, tool: c.tool(), dialog: c.dialog(), inSketch: c.inSketch(),
+                newSketches: c.newSketches(), hintsDone: hints, hintsOn: K.run.hintsOn, view: K.run.view,
+                resolveText: window.SolidcraftKursTargets.resolve('tool:sketch.text', K.run.snap, cmds),
+                panelHandles: [...K.run.snap.handles.keys()].filter(n => /panel:SKETCH|dropdown|tab:SKETCH/.test(n))});
+        }));
+    }
     await shot('schritt6-text');
     await call('ui.start', {command: 'sketch.text'});
     log(await taskDone(1), 'Schritt 6: Text-Werkzeug erkannt');

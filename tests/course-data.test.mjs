@@ -44,3 +44,15 @@ test('Prüfwerkzeug meldet unbekannte Zielarten und kaputte Stufen', () => {
     assert.ok(problems.some(p => /flug:irgendwas/.test(p)));
     assert.ok(problems.some(p => /fehlt/.test(p)));
 });
+
+test('Namensschild: auch ein einzelnes „I“ zählt als Name, ein leerer Flächenumriss nicht', () => {
+    const C = load('course/context.js').SolidcraftKursContext;
+    const step = course.chapters[0].steps.find(s => s.title === 'Deinen Namen schreiben');
+    const nameTask = step.tasks[2];
+    const doc = sketches => ({active_sketch: 3, bodies: [], timeline: [], sketches});
+    const base = C.makeBase({ui: {}, doc: doc([{id: 1, curves: 4, profiles: 1}])});
+    const c = sk => C.make({ui: {}, handles: new Map(), doc: doc([{id: 1, curves: 4, profiles: 1}, sk])}, base);
+    assert.equal(nameTask.check(c({id: 3, curves: 8, profiles: 2})), true);   // „I“ auf der Fläche
+    assert.equal(nameTask.check(c({id: 3, curves: 4, profiles: 1})), false);  // nur der Umriss
+    assert.equal(nameTask.check(c({id: 3, curves: 8, profiles: 1})), false);  // Umriss mit runden Ecken
+});

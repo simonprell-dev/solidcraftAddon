@@ -20,10 +20,17 @@
 
     // Eine neue Skizze (seit Schrittbeginn) mit Buchstaben darin. Die Umrisse der Fläche, auf
     // der die Skizze liegt, bringen schon etwa 8 Linien mit – Buchstaben kommen dazu.
-    const textSketch = c => c.sketches().some(s => !c.base.sketchIds.includes(s.id) && s.curves >= 12);
+    // Umriss der Fläche = 1 Profil (bei runden Ecken schon 8 Linien!), jeder Buchstabe ergibt
+    // mindestens ein weiteres Profil (geprüft: „I“ → 2 Profile).
+    const textSketch = c => c.sketches().some(s => !c.base.sketchIds.includes(s.id) && s.profiles >= 2);
     const extrudeOpen = c => c.dialog() === 'solid.extrude';
     const plateDone = c => !c.inSketch() && c.bodies().length > 0 && c.height() >= 2 && c.height() <= 5.5;
     const textRaised = c => !c.inSketch() && c.height() >= c.base.height + 1;
+    // Mitte der zuletzt gezeichneten Skizze – „Klicke in dein Rechteck“.
+    const sketchTarget = c => {
+        const p = c.sketchCenter();
+        return p ? 'world:' + JSON.stringify(p.map(v => Math.round(v * 10) / 10)) : 'viewport';
+    };
     // Mitte der Oberseite – dorthin zeigt die Hand für die zweite Skizze.
     const topTarget = c => {
         const t = c.top();
@@ -55,6 +62,7 @@
                     title: 'Schau dich um',
                     text: '<p>In der Mitte siehst du den <b>3D-Raum</b>. Bevor wir bauen, lernst du dich umzusehen:</p>' +
                         '<ul><li><b>Mausrad drehen</b>: heran- und wegzoomen</li>' +
+                        '<li><b>Rechte Maustaste</b> gedrückt halten und ziehen: drehen</li>' +
                         '<li><b>Mittlere Maustaste</b> (aufs Mausrad drücken) gedrückt halten und ziehen: verschieben</li>' +
                         '<li>Oben rechts der <b>Ansichtswürfel</b>: klicke auf eine Seite, dann schaust du von dort</li></ul>',
                     tasks: [
@@ -96,7 +104,7 @@
                     hints: [
                         {target: 'tool:sketch.rectangle.two_point', text: 'Klicke auf „Rechteck“',
                             done: c => /^sketch\.rectangle/.test(c.tool() || '') || !!(c.activeSketch() && c.activeSketch().profiles >= 1)},
-                        {target: 'viewport', text: 'Klicke zwei Ecken',
+                        {target: 'viewport', text: 'Klicke nacheinander zwei Ecken',
                             done: c => !!(c.activeSketch() && c.activeSketch().profiles >= 1)}
                     ]
                 },
@@ -115,7 +123,7 @@
                         {target: 'tool:sketch.finish', text: 'Klicke auf „Skizze beenden“', done: c => !c.inSketch()},
                         {target: 'tool:solid.extrude', text: 'Klicke auf „Extrudieren“',
                             done: c => extrudeOpen(c) || plateDone(c)},
-                        {target: 'viewport', text: 'Klicke in dein Rechteck',
+                        {target: sketchTarget, text: 'Klicke in dein Rechteck',
                             done: c => c.dialogPicked('Profiles') > 0 || !extrudeOpen(c) || plateDone(c)},
                         {target: 'dialog:Distance', text: 'Tippe 3 ein, dann OK', done: c => plateDone(c) || !extrudeOpen(c)}
                     ]
