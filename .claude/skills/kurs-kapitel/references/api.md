@@ -73,6 +73,7 @@ Skizzenmodus `toolbar:sketch.line`, `toolbar:sketch.rectangle.two_point`,
 | `c.bodyCount()` / `c.largest()` | Anzahl Körper / größter Körper |
 | `c.top('long')` / `c.top(2)` | Oberseite entlang der längsten bzw. einer festen Achse |
 | `c.sketchCenter()` | Mitte der neuesten Skizze in Weltkoordinaten |
+| `c.base` | `{camera, sketchIds, height, volume, bodyCount, features, types, ignore}` bei Schrittbeginn; Körper aus `ignore` (lagen schon vor dem Kapitel im Design) zählen nirgends mit |
 
 Fertige Helfer in `course-data.js`: `sketchHints({…})`, `extrudeHints({…})`, `exportStep(was)`,
 Prüfungen wie `profileDrawn`, `filleted`, `shelled`, `newBody`, `combined`, Ziele wie `cornerEdge`,
@@ -81,4 +82,3 @@ Prüfungen wie `profileDrawn`, `filleted`, `shelled`, `newBody`, `combined`, Zie
 API-Fallen (live gefunden): Ausschneiden auf einer Fläche braucht `direction: 'negative'`; eine Skizze
 auf XZ zeigt mit y nach −Z; der Nullpunkt einer Flächenskizze liegt nicht in der Flächenmitte
 (`sketch.inspect().plane` umrechnen).
-| `c.base` | `{camera, sketchIds, height, features}` bei Schrittbeginn |
