@@ -35,7 +35,7 @@
 
     function defaultState () {
         return {started: false, open: false, collapsed: false, chapterId: chapters[0].id, step: 0,
-            done: {}, manual: {}, pos: null, transition: null};
+            done: {}, manual: {}, pos: null, transition: null, bases: {}};
     }
     function loadState () {
         let loaded = defaultState();
@@ -68,7 +68,8 @@
         const step = currentStep();
         run.needBase = true;   // Zustand bei Schrittbeginn kommt mit dem nächsten Snapshot
         run.wasComplete = !!state.done[stepId(state.chapter, state.step)];
-        run.taskDone = [];
+        // Ein schon geschaffter Schritt (z. B. nach „←“) bleibt abgehakt.
+        run.taskDone = run.wasComplete ? (step.tasks || []).map(() => true) : [];
         const auto = step.autoHints !== undefined ? step.autoHints : currentChapter().autoHints;
         run.hintsOn = !!auto && step.kind !== 'info';
         run.view = 'step';
@@ -173,8 +174,21 @@
         bubble.style.top = `${Math.max(8, Math.min(window.innerHeight - h - 8, spot.top))}px`;
     }
 
+    // Liegt das Ziel unter dem Kursfenster, rückt das Fenster auf die andere Seite.
+    function dodgePanel (pt) {
+        if (!panel || !state.open) return;
+        const p = panel.getBoundingClientRect();
+        const m = 40;
+        if (pt.x < p.left - m || pt.x > p.right + m || pt.y < p.top - m || pt.y > p.bottom + m) return;
+        const left = pt.x > window.innerWidth / 2;
+        state.pos = {x: left ? 16 : window.innerWidth - p.width - 16, y: p.top};
+        clampPanel();
+        saveState();
+    }
+
     function drawPoint (pt) {
         ensureOverlay();
+        dodgePanel(pt);
         const key = `${Math.round(pt.x)},${Math.round(pt.y)}|${pt.text}|${panelKey()}`;
         if (key === lastHintKey) return;
         overlay.innerHTML = '';
@@ -240,6 +254,7 @@
 
     function renderPanel () {
         ensurePanel();
+        wasReady = A.ready();
         panel.style.display = state.open ? '' : 'none';
         if (!state.open) {
             clearOverlay();
@@ -314,7 +329,6 @@
         panel.appendChild(body);
         if (run.view === 'step') panel.appendChild(renderFooter(step));
         if (run.view === 'transition') panel.appendChild(renderTransitionFooter());
-        wasReady = A.ready();
         if (!wasReady) panel.appendChild(el('div', 'sk-loading', 'SolidCraft lädt noch …'));
         clampPanel();
         lastHintKey = '';
@@ -668,6 +682,8 @@
             if (overlay) clearOverlay();
             return;
         }
+        // Im Hintergrund-Tab nichts abfragen: Anfragen würden sich sonst stauen.
+        if (document.hidden) return;
         if (!panel || !document.body.contains(panel)) renderPanel();
         // Nur neu aufbauen, wenn SolidCraft wirklich gerade fertig geladen hat – ein Neuaufbau
         // ersetzt die Knöpfe und kann einen Klick verschlucken.
@@ -676,7 +692,17 @@
         if (!snap) return;
         run.snap = snap;
         if (run.needBase) {
-            run.base = C.makeBase(snap);
+            // Den Zustand bei Schrittbeginn merken – auch über ein Neuladen hinweg, solange es
+            // dasselbe Design ist. Sonst zählte z. B. eine schon angelegte Skizze nicht mehr als neu.
+            const id = stepId(state.chapter, state.step);
+            const saved = state.bases[id];
+            if (saved && saved.doc === snap.documentId) {
+                run.base = saved.base;
+            } else {
+                run.base = C.makeBase(snap);
+                state.bases = {[id]: {doc: snap.documentId, base: run.base}};
+                saveState();
+            }
             run.needBase = false;
             run.at.clear();
         }

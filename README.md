@@ -64,6 +64,7 @@ npm install
 npm test        # Unit-Tests (node:test)
 npm run check   # prüft die Kursdaten
 npm run e2e     # spielt Kapitel 1 in der echten Web-App durch (Edge/Chromium, Erweiterung geladen)
+npm run e2e:robust  # Zurück/Neuladen/verdecktes Ziel/Ansichtswürfel
 ```
 
 `npm run e2e` braucht Edge oder Chromium: Google Chrome ab Version 137 lädt entpackte

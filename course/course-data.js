@@ -61,7 +61,7 @@
                         {text: 'Zoome oder drehe die Ansicht', check: c => c.cameraMoved()}
                     ],
                     hints: [
-                        {target: 'handle:axis_view:home', text: 'Klicke auf den Ansichtswürfel', done: c => c.cameraMoved()}
+                        {target: 'handle:axis_view:z', text: 'Klicke auf „Z“: Blick von oben', done: c => c.cameraMoved()}
                     ]
                 },
                 {

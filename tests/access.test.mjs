@@ -109,3 +109,8 @@ test('document.inspect spätestens nach einer Sekunde neu', async t => {
     await a.snapshot();
     assert.equal(api.calls.filter(m => m === 'document.inspect').length, 2);
 });
+
+test('snapshot() liefert die Dokument-ID (für gespeicherte Schritt-Startzustände)', async () => {
+    const snap = await access({solidcraft: fakeApi()}).snapshot();
+    assert.equal(snap.documentId, 1);
+});
