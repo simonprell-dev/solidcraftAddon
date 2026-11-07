@@ -38,8 +38,12 @@ Einstiegskapitel je Stufe: `levels` am Ende von `course-data.js`.
 | `handle:<name>` | jedes Handle aus `ui.handles`, z. B. `handle:appbar:save`, `handle:axis_view:home`, `handle:tab:new` |
 | `dialog:<Label>` | Feld im offenen Dialog: `dialog:Distance`, `dialog:Operation`, `dialog:OK` |
 | `plane:XY` | Ebene im Modell (über `ui.at`) |
+| `axis:Z` | Achse im Modell (über `ui.at`), z. B. für Drehen und Muster |
 | `world:[x,y,z]` | Punkt im Modell in mm, z. B. `c => 'world:' + JSON.stringify(c.top())` |
 | `viewport` | Mitte der 3D-Ansicht („Klicke zwei Ecken“) |
+
+Hinweisfeld `search: 'Kombinieren'`: Liegt das Werkzeug in keinem sichtbaren Button, zeigt die Hand auf
+die Befehlssuche oben rechts („Klicke hier und suche „Kombinieren““). Für alles in Aufklappern verwenden.
 
 Live verifizierte Handles (SolidCraft 0.30): `toolbar:sketch.create`, `toolbar:solid.extrude`,
 `toolbar:solid.revolve`, `toolbar:solid.hole`, `toolbar:solid.fillet`, `toolbar:solid.chamfer`,
@@ -64,4 +68,17 @@ Skizzenmodus `toolbar:sketch.line`, `toolbar:sketch.rectangle.two_point`,
 | `c.cameraMoved()` | Ansicht seit Schrittbeginn verändert? |
 | `c.has(handle)` | Handle gerade sichtbar? |
 | `c.approx(a, b, tol)` | Vergleich mit Toleranz |
+| `c.newFeatures(type)` | neue Zeitleisten-Elemente seit Schrittbeginn: `FilletFeature`, `ChamferFeature`, `HoleFeature`, `ShellFeature`, `RevolveFeature`, `CircularPatternFeature`, `MirrorFeature`, `ExtrudeFeature` |
+| `c.volume()` / `c.faceCount(type)` | Volumen in mm³ / Anzahl Flächen einer Art (`cylinder`, `sphere`, `cone`) |
+| `c.bodyCount()` / `c.largest()` | Anzahl Körper / größter Körper |
+| `c.top('long')` / `c.top(2)` | Oberseite entlang der längsten bzw. einer festen Achse |
+| `c.sketchCenter()` | Mitte der neuesten Skizze in Weltkoordinaten |
+
+Fertige Helfer in `course-data.js`: `sketchHints({…})`, `extrudeHints({…})`, `exportStep(was)`,
+Prüfungen wie `profileDrawn`, `filleted`, `shelled`, `newBody`, `combined`, Ziele wie `cornerEdge`,
+`holeSpot`, `rimEdge`, `lidTop`, `zTop`, `sketchTarget`.
+
+API-Fallen (live gefunden): Ausschneiden auf einer Fläche braucht `direction: 'negative'`; eine Skizze
+auf XZ zeigt mit y nach −Z; der Nullpunkt einer Flächenskizze liegt nicht in der Flächenmitte
+(`sketch.inspect().plane` umrechnen).
 | `c.base` | `{camera, sketchIds, height, features}` bei Schrittbeginn |

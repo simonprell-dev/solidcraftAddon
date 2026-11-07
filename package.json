@@ -1,6 +1,6 @@
 {
   "name": "einfuehrungskurs-solidcraft",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Browser-Erweiterung: geführter 3D-Konstruktionskurs für Kinder in SolidCraft",
   "private": true,
   "license": "MIT",
@@ -10,6 +10,7 @@
     "check": "node tools/check-course.mjs",
     "e2e": "node tests/e2e.mjs",
     "e2e:robust": "node tests/e2e-robust.mjs",
+    "e2e:chapters": "node tests/e2e-chapters.mjs",
     "icons": "node tools/make-icons.mjs"
   },
   "devDependencies": {

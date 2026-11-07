@@ -161,3 +161,9 @@ test('Körper vom Kapitelstart werden ignoriert', () => {
     assert.equal(c.height(), 0);
     assert.equal(c.volume(), 0);
 });
+
+test('top(2): Oberseite entlang einer festen Achse (Würfel: alle Seiten gleich lang)', () => {
+    const doc = fixture('doc-plate.json');
+    doc.bodies[0].bbox = {min: [-10, -10, 0], max: [10, 10, 20]};
+    assert.deepEqual(make(snap(doc)).top(2), [0, 0, 20]);
+});

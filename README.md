@@ -14,14 +14,16 @@ Sie funktioniert wie der [Einführungskurs für Scratch](https://simonprell-dev.
 
 ## Kursübersicht
 
-| # | Projekt | Neue Werkzeuge | Stand |
-|---|---|---|---|
-| 1 | 🏷️ Namensschild | Skizze, Rechteck, Extrudieren, Text | ✅ fertig (10 Schritte) |
-| 2 | 🔑 Schlüsselanhänger | Ecken abrunden, Loch schneiden, Maße | geplant |
-| 3 | 🎲 Spielwürfel | Würfel, Kugeln abziehen, Fase | geplant |
-| 4 | ✏️ Stifteköcher / Handyhalter | Schale, Winkel, mehrere Körper | geplant |
-| 5 | 📦 Box mit Deckel | zwei Teile, Toleranz, Passung | geplant |
-| 6 | 🚀 Rakete oder Kreisel | Rotation, Spiegeln/Muster, Kombinieren | geplant |
+| # | Projekt | Stufe | Neue Werkzeuge | Schritte |
+|---|---|---|---|---|
+| 1 | 🏷️ Namensschild | Neuling | Skizze, Rechteck, Extrudieren, Text | 10 |
+| 2 | 🔑 Schlüsselanhänger | Neuling | Vollrundung, Bohrung | 7 |
+| 3 | 🎲 Spielwürfel | Schon mal ausprobiert | Kreis, Ausschneiden, Abschrägung | 8 |
+| 4 | ✏️ Stifteköcher | Schon mal ausprobiert | Hülle, Neuer Körper, Kombinieren | 9 |
+| 5 | 📦 Box mit Deckel | Ich kenne mich aus | zwei Teile, Spiel/Toleranz | 7 |
+| 6 | 🚀 Rakete | Ich kenne mich aus | Linie, Drehen, Kreisförmiges Muster | 9 |
+
+Zusammen 6 Kapitel mit 50 Schritten. Die Stufen starten bei Kapitel 1, 3 bzw. 5 – alle Kapitel bleiben jederzeit erreichbar.
 
 ## Benutzung
 
@@ -64,7 +66,8 @@ npm install
 npm test        # Unit-Tests (node:test)
 npm run check   # prüft die Kursdaten
 npm run e2e     # spielt Kapitel 1 in der echten Web-App durch (Edge/Chromium, Erweiterung geladen)
-npm run e2e:robust  # Zurück/Neuladen/verdecktes Ziel/Ansichtswürfel
+npm run e2e:robust  # Zurück, Neuladen, zwei Tabs, verdecktes Ziel, Pokal, Übergang
+npm run e2e:chapters  # spielt die Kapitel 2–6 durch (einzeln: npm run e2e:chapters wuerfel)
 ```
 
 `npm run e2e` braucht Edge oder Chromium: Google Chrome ab Version 137 lädt entpackte

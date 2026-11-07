@@ -13,7 +13,8 @@
  *   c.height()        Dicke aller Körper zusammen in mm (entlang ihrer dünnsten Richtung –
  *                     so zählt auch eine Platte, die auf der Front- oder Seitenebene steht)
  *   c.top()           Mittelpunkt der Oberseite aller Körper [x, y, z] oder null
- *   c.top('long')     dasselbe entlang der längsten Richtung (z. B. Oberkante eines Köchers)
+ *   c.top('long')     dasselbe entlang der längsten Richtung (z. B. Oberkante eines Köchers);
+ *   c.top(2)          entlang einer festen Achse (0 = x, 1 = y, 2 = z), z. B. beim Würfel
  *   c.sketchCenter()  Mitte der neuesten Skizze [x, y, z] (aus sketch.inspect) oder null
  *   c.bodyCount(), c.largest(), c.volume() (mm³), c.faceCount('cylinder' | 'sphere' | 'cone' …)
  *   c.features(type)  Anzahl Elemente der Zeitleiste mit diesem Typ ('Sketch', 'ExtrudeFeature' …)
@@ -142,7 +143,7 @@
             height: () => height,
             volume: () => volume,
             faceCount: type => bodies.reduce((n, b) => n + ((b.face_types || {})[type] || 0), 0),
-            top: mode => box ? topOf(box, mode === 'long' ? longAxis(box) : axis) : null,
+            top: mode => box ? topOf(box, typeof mode === 'number' ? mode : mode === 'long' ? longAxis(box) : axis) : null,
             features: type => types[type] || 0,
             newFeatures: type => Math.max(0, (types[type] || 0) - ((base.types || {})[type] || 0)),
             cameraMoved: () => cameraDiffers(ui.camera, base.camera),

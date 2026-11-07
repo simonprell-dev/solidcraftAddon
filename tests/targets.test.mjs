@@ -74,3 +74,10 @@ test('tool: ohne Button und Panel, mit Suchtext → Befehlssuche', () => {
     assert.equal(r.target.name, 'ribbon:search');
     assert.equal(r.text, 'Klicke hier und suche „Kombinieren“');
 });
+
+test('tool: mit Suchtext nimmt die Befehlssuche vor dem Panel-Aufklapper', () => {
+    const c2 = new Map([['sketch.rectangle.center', {tab: 'SKETCH', panel: 'CREATE', label: 'Center Rectangle'}]]);
+    const r = T.resolve('tool:sketch.rectangle.center', snap(['panel:SKETCH:CREATE', 'ribbon:search']), c2,
+        {search: 'Rechteck vom Mittelpunkt'});
+    assert.equal(r.target.name, 'ribbon:search');
+});

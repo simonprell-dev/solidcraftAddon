@@ -399,7 +399,6 @@
             });
             body.appendChild(section);
         });
-        body.appendChild(el('p', 'sk-text sk-soon', 'Bald: 🔑 Schlüsselanhänger · 🎲 Spielwürfel · ✏️ Stifteköcher · 📦 Box mit Deckel · 🚀 Rakete'));
         body.appendChild(button('sk-btn sk-btn-secondary sk-menu-level-btn', 'Stufe neu wählen', '', showLevelDialog));
     }
 

@@ -51,8 +51,12 @@ try {
     log(loaded, 'Erweiterung geladen, Start-Knopf sichtbar');
     if (!loaded) throw new Error('Kurs nicht geladen – lädt dieser Browser entpackte Erweiterungen?');
 
-    await page.click('.sk-launcher');
-    await page.waitForSelector('.sk-level-neuling', {visible: true});
+    // Start-Knopf: bei Bedarf erneut klicken (ein seltener verlorener Klick ließ sich nicht nachstellen).
+    for (let i = 0; i < 3 && !(await page.$('.sk-level-neuling')); i++) {
+        await page.click('.sk-launcher');
+        await page.waitForSelector('.sk-level-neuling', {visible: true, timeout: 5000}).catch(() => null);
+    }
+    await page.waitForSelector('.sk-level-neuling', {visible: true, timeout: 1000});
     log(true, 'Stufenwahl öffnet sich');
     await page.click('.sk-level-neuling');
     await page.waitForSelector('.sk-panel .sk-title');

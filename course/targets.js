@@ -42,10 +42,12 @@
         const search = opts && opts.search && point(snap, 'ribbon:search');
         const info = cmds && cmds.get(cmd);
         if (!info) return search ? {kind: 'via', target: search, text: `Klicke hier und suche „${opts.search}“`} : null;
-        // Panel mit Aufklapper (z. B. ERSTELLEN ▾) im Tab des Werkzeugs.
+        // Mit Suchtext ist die Befehlssuche am sichersten (das Werkzeug kann in einem
+        // Unter-Aufklapper stecken, z. B. Rechteck ▾).
+        if (search) return {kind: 'via', target: search, text: `Klicke hier und suche „${opts.search}“`};
+        // Panel mit Aufklapper (z. B. Erstellen ▾) im Tab des Werkzeugs.
         const panel = point(snap, `panel:${info.tab}:${info.panel}`);
         if (panel) return {kind: 'via', target: panel, text: `Klicke auf „${panelName(info.panel)} ▾“`};
-        if (search) return {kind: 'via', target: search, text: `Klicke hier und suche „${opts.search}“`};
         const tab = point(snap, `tab:${info.tab}`);
         if (tab) return {kind: 'via', target: tab, text: `Öffne oben den Tab „${tabName(info.tab)}“`};
         return null;

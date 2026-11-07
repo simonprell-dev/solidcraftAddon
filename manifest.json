@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Einführungskurs für SolidCraft – 3D-Konstruieren auf Deutsch",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Geführter 3D-Konstruktionskurs für Kinder direkt im SolidCraft-Editor: Namensschild, Schlüsselanhänger, Würfel und mehr. Für Schule, AG und Zuhause.",
   "icons": {
     "16": "icons/icon-16.png",
