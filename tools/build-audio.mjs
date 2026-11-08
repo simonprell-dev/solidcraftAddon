@@ -7,6 +7,7 @@
 // Stimmen landen in .voices/ (oder PIPER_VOICES) und werden beim ersten Lauf geladen.
 // Stimmen: Thorsten (Deutsch, CC0) und LJSpeech (Englisch, gemeinfrei) – frei weitergebbar.
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import {spawnSync} from 'child_process';
 import {fileURLToPath} from 'url';
@@ -72,7 +73,11 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
         .map(it => ({lang: it.lang, voice: VOICES[it.lang], text: it.text, out: path.join(root, it.file)}));
     console.log(`${items.length} Schritte, ${jobs.length} zu sprechen`);
     if (jobs.length) {
-        const r = spawnSync(python, [path.join(root, 'tools/tts.py'), voicesDir], {input: JSON.stringify(jobs), stdio: ['pipe', 'inherit', 'inherit']});
+        // Aufträge als UTF-8-Datei übergeben (nicht über stdin – dessen Kodierung hängt unter Windows vom System ab).
+        const jobsFile = path.join(os.tmpdir(), `solidcraft-kurs-tts-${process.pid}.json`);
+        fs.writeFileSync(jobsFile, JSON.stringify(jobs), 'utf8');
+        const r = spawnSync(python, [path.join(root, 'tools/tts.py'), voicesDir, jobsFile], {stdio: 'inherit'});
+        fs.rmSync(jobsFile, {force: true});
         if (r.status !== 0) process.exit(1);
     }
     // Dateien zu Schritten, die es nicht mehr gibt, entfernen.

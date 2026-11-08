@@ -81,7 +81,8 @@ function jsonLd (page) {
         typicalAgeRange: '8-14',
         educationalUse: de ? 'Unterricht, AG, Makerspace, Zuhause' : 'Lessons, clubs, makerspaces, home',
         license: REPO + '/blob/main/LICENSE',
-        downloadUrl: REPO + '/releases/latest',
+        downloadUrl: 'https://chromewebstore.google.com/detail/bhihcngjmhlmmcofdaolcegmihlbmjpf',
+        installUrl: 'https://chromewebstore.google.com/detail/bhihcngjmhlmmcofdaolcegmihlbmjpf',
         author: {'@type': 'Person', name: 'Simon Prell', url: 'https://github.com/simonprell-dev'}
     };
     const faq = {

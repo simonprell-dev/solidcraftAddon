@@ -74,7 +74,11 @@ als „Geplant“ markiert; das Fotostudio-Kapitel erklärt, wofür sie gedacht 
 
 ## Benutzung
 
-1. Erweiterung installieren (siehe unten) und auf das Symbol klicken – SolidCraft öffnet sich.
+[**➜ Im Chrome Web Store installieren**](https://chromewebstore.google.com/detail/bhihcngjmhlmmcofdaolcegmihlbmjpf)
+
+
+1. Erweiterung aus dem **[Chrome Web Store](https://chromewebstore.google.com/detail/bhihcngjmhlmmcofdaolcegmihlbmjpf)** installieren (läuft auch in Edge und Brave)
+   und auf das Symbol klicken – SolidCraft öffnet sich.
 2. Unten auf **🎓 3D-Kurs starten** klicken und eine Stufe wählen.
 3. Dem Kursfenster folgen. Es lässt sich verschieben (Kopfzeile ziehen) und einklappen.
 

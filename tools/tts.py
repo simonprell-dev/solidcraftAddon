@@ -1,19 +1,23 @@
 """Erzeugt MP3-Sprachdateien mit Piper (offline, freie Stimmen).
 
 Aufruf (macht tools/build-audio.mjs):
-    python tools/tts.py <voices-dir>   < jobs.json
-jobs.json: [{"lang": "de", "voice": "de_DE-thorsten-high", "text": "...", "out": "audio/de/x-01.mp3"}, ...]
+    python tools/tts.py <voices-dir> <jobs.json>
+jobs.json (UTF-8): [{"lang": "de", "voice": "de_DE-thorsten-high", "text": "...", "out": "audio/de/x-01.mp3"}, ...]
 
 Benötigt: pip install piper-tts lameenc
 """
 import io
 import json
 import os
+import re
 import sys
 import wave
 
 import lameenc
 from piper import PiperVoice, SynthesisConfig
+
+# Typische Reste falsch dekodierter Umlaute (UTF-8 als cp1252 gelesen)
+MOJIBAKE = re.compile("Ã.|Â.|â€")
 
 PAUSE_S = 0.35        # Pause zwischen Sätzen
 BITRATE = 32          # kbit/s, mono – reicht für Sprache
@@ -37,8 +41,14 @@ def synth(voice, text, lang):
 
 
 def main():
-    voices_dir = sys.argv[1]
-    jobs = json.load(sys.stdin)
+    voices_dir, jobs_file = sys.argv[1], sys.argv[2]
+    # Ausdrücklich UTF-8: Unter Windows wäre sonst cp1252 Standard, und aus „ö“ würde „Ã¶“ –
+    # die Stimme sagt dann „A Tilde Absatz“.
+    with open(jobs_file, encoding="utf-8") as f:
+        jobs = json.load(f)
+    for job in jobs:
+        if MOJIBAKE.search(job["text"]):
+            sys.exit(f"Kaputte Zeichen (Kodierung) in {job['out']}: {MOJIBAKE.search(job['text']).group(0)!r}")
     loaded = {}
     for i, job in enumerate(jobs, 1):
         name = job["voice"]

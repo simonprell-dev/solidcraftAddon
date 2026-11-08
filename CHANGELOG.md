@@ -12,6 +12,14 @@
   Stimme des Browsers – nie eine Online-Stimme
 - `npm run audio`, `npm run e2e:audio`; `npm run check` prüft, ob alle Aufnahmen zum Text passen
 
+### Behoben
+- Deutsche Sprachaufnahmen: Umlaute wurden als „A Tilde Absatz“ gesprochen (Texte gingen unter Windows
+  als cp1252 statt UTF-8 an die Sprachausgabe). Aufträge laufen jetzt über eine UTF-8-Datei, `tts.py` bricht
+  bei kaputten Zeichen ab; alle deutschen Aufnahmen neu erzeugt
+
+### Store
+- Die Erweiterung ist im Chrome Web Store: README und Projektseite verlinken den Eintrag
+
 ### Intern
 - Kapitel als eigene Dateien `course/chapters/<id>.js` mit `add()`/`translate()` und gemeinsamen `helpers`
 - Kapitel können nur lesende App-Befehle anmelden (`addRead`, nur während das Kapitel offen ist);
