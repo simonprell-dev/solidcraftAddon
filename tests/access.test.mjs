@@ -147,3 +147,24 @@ test('prefs() liest die SolidCraft-Einstellungen (Sprache), bei Fehler null', as
     assert.equal(await access({solidcraft: fakeApi()}).prefs(), null);
     assert.equal(await access({}).prefs(), null);
 });
+
+test('addRead(): zusätzliche, nur lesende engine-Befehle landen in snap.extra', async () => {
+    const api = fakeApi();
+    const seen = [];
+    const base = api.request.bind(api);
+    api.request = (method, params) => {
+        if (method === 'engine.execute') {
+            seen.push(params.command);
+            return params.command === 'joint.list' ? Promise.resolve([{name: 'Drehgelenk'}]) : Promise.reject(new Error('x'));
+        }
+        return base(method, params);
+    };
+    const a = access({solidcraft: api});
+    a.addRead({key: 'joints', command: 'joint.list'});
+    a.addRead({key: 'kaputt', command: 'gibt.es.nicht'});
+    a.addRead({key: 'joints', command: 'joint.list'});   // doppelt → nur einmal
+    const snap = await a.snapshot();
+    assert.deepEqual(snap.extra.joints, [{name: 'Drehgelenk'}]);
+    assert.equal(snap.extra.kaputt, null);
+    assert.equal(seen.filter(c => c === 'joint.list').length, 1);
+});

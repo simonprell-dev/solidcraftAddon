@@ -3,6 +3,7 @@
 import fs from 'fs';
 import path from 'path';
 import {fileURLToPath} from 'url';
+import {courseFiles} from './course-files.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -53,9 +54,9 @@ export function checkCourse (course, known) {
 // Alle Sprachen vollständig? (Oberfläche, Beschriftungen, Kursinhalte, _locales der Erweiterung)
 export function checkLanguages () {
     const window = {};
-    for (const f of ['i18n/de.js', 'i18n/en.js', ...fs.readdirSync(path.join(root, 'i18n'))
-        .filter(n => /.js$/.test(n) && !['de.js', 'en.js'].includes(n)).map(n => 'i18n/' + n),
-    'course/i18n.js', 'course/course-data.js']) {
+    const extraLangs = fs.readdirSync(path.join(root, 'i18n')).filter(n => /\.js$/.test(n)).map(n => 'i18n/' + n)
+        .filter(f => !courseFiles().includes(f));
+    for (const f of [...extraLangs, ...courseFiles()]) {
         new Function('window', fs.readFileSync(path.join(root, f), 'utf8'))(window);
     }
     const I = window.SolidcraftKursI18n;
@@ -84,7 +85,7 @@ export function checkStoreLimits () {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
     const window = {};
-    new Function('window', fs.readFileSync(path.join(root, 'course/course-data.js'), 'utf8'))(window);
+    for (const f of courseFiles()) new Function('window', fs.readFileSync(path.join(root, f), 'utf8'))(window);
     const course = window.SolidcraftKursCourse;
     const problems = [...checkCourse(course, knownCommands()), ...checkLanguages(), ...checkStoreLimits()];
     problems.forEach(p => console.log(p));

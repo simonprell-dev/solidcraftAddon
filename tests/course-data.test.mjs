@@ -133,3 +133,26 @@ test('Box „Die Box“: zu flach extrudiert → Hand bleibt beim Extrudieren st
     const c = mk({doc: {bodies: [body('Body1', [-30, -20, 0], [30, 20, 5])], sketches: [{id: 1, profiles: 1}]}});
     assert.notEqual(targetOf(active(step, c), c), 'tool:solid.shell');
 });
+
+test('Kapiteldateien: add() hängt an, translate() trägt Englisch ein, helpers sind da', () => {
+    const w = load('course/course-data.js');
+    const K = w.SolidcraftKursCourse;
+    const n = K.chapters.length;
+    for (const name of ['sketchHints', 'extrudeHints', 'exportStep', 'world', 'dims', 'newBody', 'plate']) {
+        assert.equal(typeof K.helpers[name], 'function', name);
+    }
+    K.add({id: 'neu', title: 'Neu', level: 'profi', steps: [{kind: 'info', title: 'a', text: 'b'}]});
+    assert.equal(K.chapters.length, n + 1);
+    assert.equal(K.chapters[n].id, 'neu');
+    K.translate('en', 'neu', {title: 'New', type: 'Sheet', steps: [{title: 'A', text: 'B'}]}, {'Hallo': 'Hello'});
+    assert.equal(w.SolidcraftKursLang.en.course.chapters.neu.title, 'New');
+    assert.equal(w.SolidcraftKursLang.en.phrases.Hallo, 'Hello');
+});
+
+test('Alle Kapiteldateien aus background.js laden ohne Fehler', async () => {
+    const {courseFiles} = await import('../tools/course-files.mjs');
+    const files = courseFiles();
+    assert.ok(files.includes('course/course-data.js'));
+    const w = load(files);
+    assert.ok(w.SolidcraftKursCourse.chapters.length >= 6);
+});

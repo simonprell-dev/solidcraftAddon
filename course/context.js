@@ -22,6 +22,8 @@
  *   c.cameraMoved()   wurde die Ansicht seit Schrittbeginn gedreht, verschoben oder gezoomt?
  *   c.has(name)       ist dieses Handle gerade sichtbar (z. B. 'dialog:OK')?
  *   c.approx(a, b, tol)
+ *   c.doc(), c.ui()   Rohdaten aus document.inspect und ui.inspect – für eigene Prüfungen in Kapiteldateien
+ *   c.extra(key)      Ergebnis eines mit SolidcraftKursAccess.addRead() angemeldeten Befehls oder null
  *   c.base            Zustand bei Schrittbeginn: {camera, sketchIds, height, volume, bodyCount,
  *                     features, types, ignore}. Körper aus base.ignore (lagen schon vor dem Kapitel
  *                     im Design) zählen nirgends mit.
@@ -147,7 +149,10 @@
             features: type => types[type] || 0,
             newFeatures: type => Math.max(0, (types[type] || 0) - ((base.types || {})[type] || 0)),
             cameraMoved: () => cameraDiffers(ui.camera, base.camera),
-            has: name => !!(snap && snap.handles && snap.handles.has(name))
+            has: name => !!(snap && snap.handles && snap.handles.has(name)),
+            doc: () => doc,
+            ui: () => ui,
+            extra: key => (snap && snap.extra && snap.extra[key] !== undefined) ? snap.extra[key] : null
         };
     }
 

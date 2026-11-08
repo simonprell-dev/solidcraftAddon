@@ -5,7 +5,7 @@
 import puppeteer from 'puppeteer-core';
 import fs from 'fs';
 import path from 'path';
-import {fileURLToPath} from 'url';
+import {fileURLToPath, pathToFileURL} from 'url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = path.join(root, 'tests/out');
@@ -14,6 +14,15 @@ const executablePath = [process.env.CHROME,
     'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
     'C:/Program Files/Google/Chrome/Application/chrome.exe',
     '/usr/bin/chromium'].filter(Boolean).find(p => fs.existsSync(p));
+
+// Weitere Abläufe: tests/plays/<kapitel-id>.mjs (export default {schrittIndex: async ({ex, call, bodies, page}) => …}).
+const PLAYS_EXTRA = {};
+const playsDir = path.join(root, 'tests/plays');
+if (fs.existsSync(playsDir)) {
+    for (const f of fs.readdirSync(playsDir).filter(n => n.endsWith('.mjs'))) {
+        PLAYS_EXTRA[f.slice(0, -4)] = (await import(pathToFileURL(path.join(playsDir, f)).href)).default;
+    }
+}
 
 const wait = ms => new Promise(r => setTimeout(r, ms));
 let failures = 0;
@@ -186,7 +195,7 @@ try {
         await wait(800);
         await page.evaluate(ci => window.SolidcraftKurs.openChapter(ci, 0), ci);
         await wait(600);
-        const play = PLAYS[ch.id] || {};
+        const play = PLAYS[ch.id] || PLAYS_EXTRA[ch.id] || {};
         for (const [si, step] of ch.steps.entries()) {
             const where = `${ch.id} ${si + 1} „${step.title}“`;
             await page.waitForFunction(t => document.querySelector('.sk-panel .sk-title')?.textContent === t,
@@ -198,7 +207,7 @@ try {
                 const ring = await page.waitForSelector('.sk-ring', {timeout: 5000}).then(() => true, () => false);
                 log(ring, `${where}: Hand zeigt (${await page.$eval('.sk-bubble', e => e.textContent).catch(() => '–')})`);
             }
-            if (play[si]) await play[si]({ex, call, bodies});
+            if (play[si]) await play[si]({ex, call, bodies, page, wait});
             // Selbst-Abhaken
             const items = await page.$$('.sk-task');
             for (const [i, li] of items.entries()) if (step.manual[i]) await li.click();
@@ -228,5 +237,5 @@ try {
 } finally {
     await browser.close();
 }
-console.log(failures ? `${failures} Fehler` : 'Kapitel 2–6 ok');
+console.log(failures ? `${failures} Fehler` : 'Kapitel ok');
 process.exit(failures ? 1 : 0);

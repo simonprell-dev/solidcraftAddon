@@ -889,5 +889,26 @@
 
     const levels = {neuling: 'namensschild', probiert: 'wuerfel', profi: 'box'};
 
-    window.SolidcraftKursCourse = {chapters, levels};
+    // Weitere Kapitel liegen in course/chapters/<id>.js und melden sich mit add() an; ihre englischen
+    // Texte tragen sie mit translate() ein. helpers sind die gemeinsamen Bausteine von oben.
+    const helpers = {
+        round1, world, dims, argmin, argmax, mids, newSketchList, newest, sketchTarget, topTarget,
+        profileDrawn, circleOnFace, plate, filleted, drilled, edgesBroken, newBody, combined, revolved, patterned,
+        shelled, sketchHints, extrudeHints, exportStep
+    };
+
+    function add (chapter) {
+        chapters.push(chapter);
+    }
+
+    function translate (lang, id, chapter, phrases) {
+        const all = window.SolidcraftKursLang = window.SolidcraftKursLang || {};
+        const L = all[lang] = all[lang] || {};
+        L.course = L.course || {};
+        L.course.chapters = L.course.chapters || {};
+        L.course.chapters[id] = chapter;
+        L.phrases = Object.assign(L.phrases || {}, phrases || {});
+    }
+
+    window.SolidcraftKursCourse = {chapters, levels, helpers, add, translate};
 })();

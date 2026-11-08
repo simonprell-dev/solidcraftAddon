@@ -167,3 +167,14 @@ test('top(2): Oberseite entlang einer festen Achse (Würfel: alle Seiten gleich 
     doc.bodies[0].bbox = {min: [-10, -10, 0], max: [10, 10, 20]};
     assert.deepEqual(make(snap(doc)).top(2), [0, 0, 20]);
 });
+
+test('c.doc(), c.ui() und c.extra() geben Rohdaten für eigene Prüfungen', () => {
+    const snap = {doc: {bodies: [], sketches: [], components: [{name: 'Rad'}]},
+        ui: {tool: null, workspace: 'render'}, extra: {joints: [{name: 'J1'}]}};
+    const c = C.make(snap);
+    assert.equal(c.doc().components[0].name, 'Rad');
+    assert.equal(c.ui().workspace, 'render');
+    assert.deepEqual(c.extra('joints'), [{name: 'J1'}]);
+    assert.equal(c.extra('fehlt'), null);
+    assert.equal(C.make({doc: {}, ui: {}}).extra('joints'), null);
+});
