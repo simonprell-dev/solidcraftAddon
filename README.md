@@ -25,6 +25,10 @@ Sie funktioniert wie der [Einführungskurs für Scratch](https://simonprell-dev.
 - **Automatische Prüfung**: Die Erweiterung erkennt, ob die Skizze offen ist, ob die Platte
   extrudiert wurde oder ob der Name heraussteht, hakt ab und wirft Konfetti 🎉
 - **Drei Stufen** zum Einstieg, Fortschritt bleibt gespeichert
+- **Alle Arbeitsbereiche**: nach den Grundlagen je ein Kapitel zu Blech, Flächen, Kunststoffteilen,
+  Schweißteilen, Zusammenbau mit Gelenken, Prüfen, Parametern und Rendern
+- **Vorlesen 🔊**: Jeder Schritt kann vorgelesen werden – mit mitgelieferten Sprachaufnahmen auf Deutsch
+  und Englisch; auf Wunsch liest der Kurs jeden neuen Schritt automatisch vor (☰ → 🔊 Vorlesen)
 
 ## Sprachen
 
@@ -54,8 +58,19 @@ Für andere SolidCraft-Sprachen zeigt der Kurs Englisch.
 | 4 | ✏️ Stifteköcher | Schon mal ausprobiert | Hülle, Neuer Körper, Kombinieren | 9 |
 | 5 | 📦 Box mit Deckel | Ich kenne mich aus | zwei Teile, Spiel/Toleranz | 7 |
 | 6 | 🚀 Rakete | Ich kenne mich aus | Linie, Drehen, Radiales Muster | 9 |
+| 7 | 📱 Handyständer aus Blech | Ich kenne mich aus | Register **Blech**: Flansch, Blechregeln, Umkantung, Entfalten, Flachmuster, DXF | 10 |
+| 8 | 🏺 Vase aus Flächen | Ich kenne mich aus | Register **Fläche**: Drehen, Verlängern, Dicke vergeben, Loft, Kürzen … | 9 |
+| 9 | 🥡 Dose mit Klick-Deckel | Ich kenne mich aus | **Kunststoff**: Lippe, Ansatz, Auflage, Rastverbindung, Kunststoffregeln | 10 |
+| 10 | 🪑 Mini-Hocker aus Rohren | Ich kenne mich aus | Register **Schweissteile**: Rahmenelement, Profile, Parameter | 10 |
+| 11 | 🌬️ Windrad | Ich kenne mich aus | **Zusammenbau** und **Einfügen**: Komponenten, Boden, Gelenk, antreiben, Normteile | 10 |
+| 12 | 🔍 Detektiv-Werkstatt | Ich kenne mich aus | **Prüfen** und **Ansicht**: Messen, Schwerpunkt, Schnitt, Eingriff, Zebra, Verlauf, Ansichten | 10 |
+| 13 | 🧱 Baukasten mit Parametern | Ich kenne mich aus | **Verwalten**: Parameter, Konfigurationen, Material, Farbe, Einheiten, Regeln | 9 |
+| 14 | 📸 Fotostudio | Ich kenne mich aus | Arbeitsbereich **Rendern**: Aussehen, Licht, Bildausschnitt, Ausgabe | 10 |
 
-Zusammen 6 Kapitel mit 50 Schritten. Die Stufen starten bei Kapitel 1, 3 bzw. 5 – alle Kapitel bleiben jederzeit erreichbar.
+Zusammen 14 Kapitel mit 128 Schritten. Die Stufen starten bei Kapitel 1, 3 bzw. 5 – alle Kapitel bleiben jederzeit erreichbar.
+Jeder Knopf eines Registers kommt vor: die wichtigen als Lern-Schritt mit Prüfung, die übrigen im Schritt
+„Was die anderen Knöpfe machen“. Animation, Simulation, Fertigung und Zeichnung sind in SolidCraft noch
+als „Geplant“ markiert; das Fotostudio-Kapitel erklärt, wofür sie gedacht sind.
 
 ## Benutzung
 
@@ -88,7 +103,10 @@ Erweiterung liest darüber alle 200 ms (nur lesend, sie verändert das Modell ni
 | `lib/solidcraft-access.js` | Zugriff auf `window.solidcraft`, ein Snapshot pro Takt |
 | `course/context.js` | Prüf-Hilfen `c.inSketch()`, `c.height()`, `c.top()` … |
 | `course/targets.js` | Hinweis-Ziele (`tool:solid.extrude`, `plane:XY` …) → Bildschirmpunkt |
-| `course/course-data.js` | **Kursinhalte** (Deutsch) – für neue Kapitel nur diese Datei ändern |
+| `course/course-data.js` | **Kursinhalte** Kapitel 1–6 (Deutsch) und gemeinsame Bausteine (`helpers`) |
+| `course/chapters/<id>.js` | weitere Kapitel, je eine Datei mit englischer Übersetzung (`add()`, `translate()`) |
+| `course/speech.js`, `course/reader.js` | Vorlesen: Text eines Schritts, Abspielen der MP3 bzw. Sprachausgabe des Browsers |
+| `audio/<sprache>/` | Sprachaufnahmen je Schritt, `audio/manifest.json` merkt sich, zu welchem Text sie passen |
 | `course/i18n.js`, `i18n/*.js` | Sprachen: Erkennung, Oberflächentexte, Übersetzungen der Kursinhalte |
 | `course/course.js` | Kursfenster, Hand, Stufenwahl, Konfetti |
 
@@ -100,12 +118,19 @@ npm test        # Unit-Tests (node:test)
 npm run check   # prüft die Kursdaten
 npm run e2e     # spielt Kapitel 1 in der echten Web-App durch (Edge/Chromium, Erweiterung geladen)
 npm run e2e:robust  # Zurück, Neuladen, zwei Tabs, verdecktes Ziel, Pokal, Übergang
-npm run e2e:chapters  # spielt die Kapitel 2–6 durch (einzeln: npm run e2e:chapters wuerfel; UI_LANG=en-US auf Englisch)
+npm run e2e:chapters  # spielt die Kapitel 2–14 durch (einzeln: npm run e2e:chapters blech; UI_LANG=en-US auf Englisch)
+npm run e2e:audio     # Vorlesen: MP3 wird geladen und spielt, ⏹, Englisch, automatisch vorlesen
+npm run audio         # spricht neue oder geänderte Schritte neu ein (Piper, offline – siehe unten)
 npm run e2e:english   # Kurs auf Englisch, Sprachwahl im Menü, Kurs folgt der SolidCraft-Sprache
 ```
 
 `npm run e2e` braucht Edge oder Chromium: Google Chrome ab Version 137 lädt entpackte
 Erweiterungen nicht mehr per Startparameter. Mit `HEADFUL=1` kann man zuschauen.
+
+**Sprachaufnahmen:** `npm run audio` braucht Python mit `pip install piper-tts lameenc` (Pfad über
+`TTS_PYTHON`). Es nutzt die freien Piper-Stimmen *Thorsten* (Deutsch, CC0) und *LJSpeech* (Englisch,
+gemeinfrei) und spricht nur Schritte neu ein, deren Text sich geändert hat. `npm run check` meldet
+fehlende oder veraltete Aufnahmen. Fehlt eine Aufnahme, liest der Kurs mit einer lokalen Stimme des Browsers vor.
 
 Mitmachen: siehe [CONTRIBUTING.md](CONTRIBUTING.md). Neue Kapitel schreibt man mit dem Skill [`.claude/skills/kurs-kapitel`](.claude/skills/kurs-kapitel/SKILL.md).
 

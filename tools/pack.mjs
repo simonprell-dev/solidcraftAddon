@@ -10,7 +10,7 @@ import {fileURLToPath} from 'url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // Genau das, was die Erweiterung zur Laufzeit braucht.
 const FILES = ['manifest.json', 'background.js', 'reset-pending.js', 'LICENSE'];
-const DIRS = ['_locales', 'course', 'i18n', 'icons', 'lib'];
+const DIRS = ['_locales', 'audio', 'course', 'i18n', 'icons', 'lib'];
 
 const CRC = new Int32Array(256).map((_, n) => {
     let c = n;

@@ -13,6 +13,7 @@
     const C = window.SolidcraftKursContext;
     const T = window.SolidcraftKursTargets;
     const I = window.SolidcraftKursI18n;
+    const S = window.SolidcraftKursSpeech;
     const t = (key, vars) => I.t(key, vars);
     // Kursinhalte: Quelle (deutsch) und die übersetzte Fassung für die aktuelle Sprache.
     const SRC = window.SolidcraftKursCourse;
@@ -30,7 +31,7 @@
 
     function defaultState () {
         return {started: false, open: false, collapsed: false, chapterId: chapters[0].id, step: 0,
-            done: {}, manual: {}, pos: null, transition: null, bases: {}, chapterBodies: {}, nav: 0, lang: 'auto'};
+            done: {}, manual: {}, pos: null, transition: null, bases: {}, chapterBodies: {}, nav: 0, lang: 'auto', autoRead: false};
     }
     function loadState () {
         let loaded = defaultState();
@@ -75,7 +76,56 @@
     const currentStep = () => currentChapter().steps[state.step];
     const stepId = (ci, si) => `${chapters[ci].id}.${si}`;
 
+    // ---------- Vorlesen ----------
+
+    const extBase = () => document.documentElement.dataset.skBase || null;
+    const reader = window.SolidcraftKursReader.create({
+        base: extBase,
+        manifest: () => extBase() ? fetch(extBase() + 'audio/manifest.json').then(r => r.json()) : null,
+        Audio: window.Audio,
+        synth: window.speechSynthesis,
+        Utterance: window.SpeechSynthesisUtterance,
+        onChange: playing => {
+            const b = panel && panel.querySelector('.sk-read');
+            if (!b) return;
+            b.innerHTML = playing ? '⏹' : '🔊';
+            b.title = playing ? t('btn.stopRead') : t('btn.read');
+            b.classList.toggle('sk-on', playing);
+        },
+        // Keine Aufnahme und keine lokale Stimme: kurz sagen, warum nichts passiert.
+        onUnavailable: () => {
+            const body = panel && panel.querySelector('.sk-body');
+            if (!body || body.querySelector('.sk-read-note')) return;
+            const note = el('div', 'sk-read-note', t('read.unavailable'));
+            body.prepend(note);
+            setTimeout(() => note.remove(), 6000);
+        }
+    });
+
+    // Was gerade im Kursfenster steht: ein Schritt (mit Audiodatei) oder eine andere Ansicht.
+    function readCurrent () {
+        const lang = currentLang;
+        if (run.view === 'step' && !state.transition) {
+            const ch = currentChapter();
+            const text = S.text(currentStep(), lang);
+            const file = S.file(lang, ch.id, state.step);
+            reader.play({lang, key: file.split('/').pop().replace('.mp3', ''), file, text, hash: S.hash(text)});
+            return;
+        }
+        // Übergang, Kapitel geschafft, Menü: nur Überschrift und Text, keine Knöpfe.
+        const body = panel && panel.querySelector('.sk-body');
+        if (!body) return;
+        const part = sel => [...body.querySelectorAll(sel)].map(n => `<p>${n.innerHTML}</p>`).join('');
+        const text = S.text({title: part('.sk-title'), text: part('.sk-text')}, lang);
+        if (text) reader.play({lang, key: '', file: '', text, hash: ''});
+    }
+
+    const toggleRead = () => reader.playing() ? reader.stop() : readCurrent();
+    const autoRead = () => { if (state.autoRead && state.open) readCurrent(); };
+
     function enterStep () {
+        reader.stop();
+        if (A.setChapter) A.setChapter(currentChapter().id);
         const step = currentStep();
         run.needBase = true;   // Zustand bei Schrittbeginn kommt mit dem nächsten Snapshot
         run.wasComplete = !!state.done[stepId(state.chapter, state.step)];
@@ -286,18 +336,21 @@
             t('header.step', {n: state.chapter + 1, title: chapter.title, step: state.step + 1, total: chapter.steps.length})));
         header.appendChild(titles);
         const actions = el('div', 'sk-header-actions');
-        actions.appendChild(button('sk-icon-btn', '☰', t('btn.menu'), () => {
+        actions.appendChild(button(`sk-icon-btn sk-read ${reader.playing() ? 'sk-on' : ''}`, reader.playing() ? '⏹' : '🔊',
+            reader.playing() ? t('btn.stopRead') : t('btn.read'), toggleRead));
+        actions.appendChild(button('sk-icon-btn sk-btn-menu', '☰', t('btn.menu'), () => {
             run.view = run.view === 'menu' ? (state.transition ? 'transition' : 'step') : 'menu';
             state.collapsed = false;
             renderPanel();
         }));
-        actions.appendChild(button('sk-icon-btn', state.collapsed ? '▴' : '▾',
+        actions.appendChild(button('sk-icon-btn sk-btn-collapse', state.collapsed ? '▴' : '▾',
             state.collapsed ? t('btn.expand') : t('btn.collapse'), () => {
                 state.collapsed = !state.collapsed;
                 saveState();
                 renderPanel();
             }));
-        actions.appendChild(button('sk-icon-btn', '✕', t('btn.close'), () => {
+        actions.appendChild(button('sk-icon-btn sk-btn-close', '✕', t('btn.close'), () => {
+            reader.stop();
             state.open = false;
             saveState();
             renderPanel();
@@ -423,6 +476,16 @@
             }));
         });
         body.appendChild(langs);
+        // Vorlesen: jeden Schritt beim Öffnen automatisch vorlesen?
+        const read = el('div', 'sk-menu-chapter sk-menu-read');
+        read.appendChild(el('div', 'sk-menu-chapter-title', `🔊 ${t('menu.read')}`));
+        read.appendChild(button(`sk-menu-step sk-autoread ${state.autoRead ? 'sk-current' : ''}`,
+            `${state.autoRead ? '✅' : '⬜'} ${t('read.auto')}`, '', () => {
+                state.autoRead = !state.autoRead;
+                saveState();
+                renderPanel();
+            }));
+        body.appendChild(read);
     }
 
     let lastResultsKey = '';
@@ -482,6 +545,7 @@
             state.step = target;
         }
         enterStep();
+        autoRead();
     }
 
     function openChapter (ci, si) {
@@ -490,9 +554,11 @@
         state.chapter = ci;
         state.step = si;
         enterStep();
+        autoRead();
     }
 
     function showChapterDone () {
+        reader.stop();
         saveState();
         run.view = 'done';
         clearOverlay();
@@ -718,6 +784,7 @@
     function applyLanguage () {
         const lang = wantedLang();
         if (lang === currentLang) return;
+        reader.stop();
         currentLang = lang;
         I.setLang(lang);
         chapters = I.localize(SRC, lang).chapters;
@@ -755,6 +822,7 @@
 
     async function step () {
         window.SolidcraftKursStyle.ensure();
+        if (A.setChapter) A.setChapter(currentChapter().id);
         pollAppLanguage();
         updateLauncher();
         if (!state.open) {
@@ -882,6 +950,7 @@
 
     // Rechtsklick aufs Erweiterungs-Symbol → „Lernfortschritt zurücksetzen“ (background.js)
     window.addEventListener('solidcraft-kurs-reset', () => {
+        reader.stop();
         try {
             localStorage.removeItem(STATE_KEY);
         } catch (e) { /* egal */ }
@@ -898,7 +967,7 @@
     });
 
     // Für den End-to-End-Test und zur Fehlersuche in der Konsole.
-    window.SolidcraftKurs = {state, run, showLevelDialog, openChapter, chapters: () => chapters, lang: () => currentLang};
+    window.SolidcraftKurs = {state, run, reader, readCurrent, showLevelDialog, openChapter, chapters: () => chapters, lang: () => currentLang};
 
     applyLanguage();
     setInterval(tick, TICK_MS);

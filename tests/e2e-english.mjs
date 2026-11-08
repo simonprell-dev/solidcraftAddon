@@ -74,16 +74,16 @@ try {
         {timeout: 6000}).then(() => true, () => false), 'Tasks tick off in English too');
 
     // Sprache im Menü auf Deutsch, dann zurück auf automatisch
-    await page.click('.sk-header-actions .sk-icon-btn:nth-child(1)'); // ☰
+    await page.click('.sk-header-actions .sk-btn-menu'); // ☰
     await page.waitForSelector('.sk-lang-de');
     log(await page.$eval('.sk-menu-lang .sk-menu-chapter-title', e => e.textContent).then(t => t.includes('Language')), 'Menu shows “Language”');
     await page.click('.sk-lang-de');
-    await page.click('.sk-header-actions .sk-icon-btn:nth-child(1)'); // ☰ zurück zum Schritt
+    await page.click('.sk-header-actions .sk-btn-menu'); // ☰ zurück zum Schritt
     log(await waitTitle('Eine Skizze starten'), 'Switched to German via the menu');
-    await page.click('.sk-header-actions .sk-icon-btn:nth-child(1)');
+    await page.click('.sk-header-actions .sk-btn-menu');
     await page.waitForSelector('.sk-lang-auto');
     await page.click('.sk-lang-auto');
-    await page.click('.sk-header-actions .sk-icon-btn:nth-child(1)');
+    await page.click('.sk-header-actions .sk-btn-menu');
     log(await waitTitle('Start a sketch'), 'Back to automatic → English');
 
     // SolidCraft selbst auf Deutsch umstellen → Kurs folgt

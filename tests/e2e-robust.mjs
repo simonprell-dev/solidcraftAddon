@@ -103,7 +103,7 @@ try {
     log(!covered, 'Kursfenster über dem Ziel weicht aus');
 
     // 4) Eingeklappt + Neuladen: das Fenster wird nicht ständig neu aufgebaut.
-    await page.click('.sk-header-actions .sk-icon-btn:nth-child(2)'); // ▾
+    await page.click('.sk-header-actions .sk-btn-collapse'); // ▾
     await page.waitForSelector('.sk-mini');
     await page.reload({waitUntil: 'domcontentloaded', timeout: 90000});
     await open();
@@ -166,9 +166,9 @@ try {
     await page.waitForSelector('.sk-next');
     await page.click('.sk-next');
     await page.waitForSelector('.sk-trophy');
-    await page.click('.sk-header-actions .sk-icon-btn:nth-child(2)'); // ▾
+    await page.click('.sk-header-actions .sk-btn-collapse'); // ▾
     await page.waitForSelector('.sk-mini');
-    await page.click('.sk-header-actions .sk-icon-btn:nth-child(2)'); // ▴
+    await page.click('.sk-header-actions .sk-btn-collapse'); // ▴
     log(await page.waitForSelector('.sk-trophy', {timeout: 2000}).then(() => true, () => false),
         'Pokal bleibt nach Ein-/Ausklappen');
 
@@ -188,7 +188,7 @@ try {
     // 9) Nach ✕ verschwindet die Hand sofort und kommt nicht wieder.
     await page.evaluate(() => window.SolidcraftKurs.openChapter(0, 2));
     await page.waitForSelector('.sk-ring', {timeout: 4000}).catch(() => null);
-    await page.click('.sk-header-actions .sk-icon-btn:nth-child(3)'); // ✕
+    await page.click('.sk-header-actions .sk-btn-close'); // ✕
     let ringSeen = false;
     for (let i = 0; i < 10; i++) {
         await wait(60);

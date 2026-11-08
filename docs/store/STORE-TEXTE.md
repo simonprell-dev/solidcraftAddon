@@ -26,7 +26,10 @@ Geführter 3D-Konstruktionskurs für Kinder – direkt im Web-CAD SolidCraft. Mi
 SolidCraft ist ein kostenloses, leistungsfähiges CAD-Programm im Browser. Für Kinder ist die Fülle an Werkzeugen am Anfang viel. Diese Erweiterung bringt einen geführten Kurs direkt in SolidCraft: Eine animierte Hand zeigt, wo geklickt wird, und die Erweiterung erkennt selbst, wenn eine Aufgabe geschafft ist.
 
 Geführter Kurs
-Der Kurs besteht aus sechs Kapiteln mit zusammen 50 Schritten. In jedem Kapitel entsteht ein eigenes Projekt, das sich mit einem 3D-Drucker ausdrucken lässt – von einem ersten einfachen Teil bis zu Bauteilen, die passgenau ineinandergreifen. Zum Start wählt das Kind eine von drei Stufen, je nachdem, wie viel es schon kann.
+Der Kurs besteht aus 14 Kapiteln mit zusammen 128 Schritten. In jedem Kapitel entsteht ein eigenes Projekt – vom Namensschild bis zu Bauteilen, die passgenau ineinandergreifen. Nach den Grundlagen hat jeder Arbeitsbereich von SolidCraft sein eigenes Kapitel: Blech (Handyständer), Fläche (Vase), Kunststoff (Dose mit Klick-Deckel), Schweissteile (Mini-Hocker), Zusammenbau mit Gelenken (Windrad), Prüfen, Verwalten mit Parametern und Rendern (Fotostudio). Jeder Knopf wird erklärt. Zum Start wählt das Kind eine von drei Stufen, je nachdem, wie viel es schon kann.
+
+Vorlesen
+Jeder Schritt kann vorgelesen werden, auf Wunsch automatisch – gut für Kinder, die noch nicht so schnell lesen. Die Sprachaufnahmen sind in der Erweiterung enthalten.
 
 Zeige-Hand und automatische Prüfung
 Die Hand zeigt auf den richtigen Button, auf das Feld im Dialog oder auf die passende Fläche im 3D-Modell. Ob die Skizze gezeichnet, der Körper extrudiert oder das Loch gebohrt ist, prüft die Erweiterung selbst und hakt die Aufgabe ab. Eigene Maße und eigene Wege sind ausdrücklich erlaubt.
@@ -80,7 +83,10 @@ Learn 3D design – step by step, right in your browser.
 SolidCraft is a free, powerful CAD program in the browser. For kids, all those tools can be a lot at first. This extension brings a guided course right into SolidCraft: an animated hand shows where to click, and the extension notices by itself when a task is done.
 
 Guided course
-The course has six chapters with 50 steps in total. Every chapter ends with a project of your own that you can print on a 3D printer – from a first simple part to parts that fit precisely into each other. At the start, kids choose one of three levels depending on how much they already know.
+The course has 14 chapters with 128 steps in total. Every chapter ends with a project of your own – from a name tag to parts that fit precisely into each other. After the basics, every SolidCraft workspace gets its own chapter: sheet metal (phone stand), surface (vase), plastic (box with a click lid), weldments (mini stool), assemble with joints (wind turbine), inspect, manage with parameters and render (photo studio). Every button is explained. At the start, kids choose one of three levels depending on how much they already know.
+
+Read aloud
+Every step can be read aloud, automatically if you like – great for kids who don’t read fast yet. The voice recordings are included in the extension.
 
 Pointing hand and automatic checks
 The hand points at the right button, the field in a dialog or the right face in the 3D model. Whether the sketch is drawn, the body is extruded or the hole is drilled – the extension checks it by itself and ticks off the task. Your own sizes and your own ways of building are explicitly allowed.

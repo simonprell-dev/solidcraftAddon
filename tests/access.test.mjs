@@ -168,3 +168,26 @@ test('addRead(): zusätzliche, nur lesende engine-Befehle landen in snap.extra',
     assert.equal(snap.extra.kaputt, null);
     assert.equal(seen.filter(c => c === 'joint.list').length, 1);
 });
+
+test('addRead() mit chapter: läuft nur, solange dieses Kapitel offen ist', async () => {
+    const api = fakeApi();
+    const seen = [];
+    const base = api.request.bind(api);
+    api.request = (method, params) => {
+        if (method === 'engine.execute') {
+            seen.push(params.command);
+            return Promise.resolve([]);
+        }
+        return base(method, params);
+    };
+    const a = access({solidcraft: api});
+    a.addRead({key: 'm', command: 'inspect.measure', chapter: 'verwalten'});
+    let snap = await a.snapshot();
+    assert.equal(seen.length, 0);
+    assert.equal(snap.extra.m, undefined);
+    a.setChapter('verwalten');
+    api.setRevision(2);
+    snap = await a.snapshot();
+    assert.deepEqual(seen, ['inspect.measure']);
+    assert.deepEqual(snap.extra.m, []);
+});

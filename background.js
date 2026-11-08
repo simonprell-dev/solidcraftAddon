@@ -28,6 +28,8 @@ const PAGE_SCRIPTS = {
         'course/i18n.js',
         'course/context.js',
         'course/targets.js',
+        'course/speech.js',
+        'course/reader.js',
         'course/course-data.js',
         'course/chapters/blech.js',
         'course/chapters/flaeche.js',
@@ -43,12 +45,13 @@ const PAGE_SCRIPTS = {
     world: 'MAIN'
 };
 
-// Läuft immer, auch bei abgeschalteter Erweiterung: holt ein Zurücksetzen nach, das
-// angefordert wurde, während kein SolidCraft-Tab offen war.
+// Läuft immer, auch bei abgeschalteter Erweiterung (isolierte Welt): holt ein Zurücksetzen nach,
+// das angefordert wurde, während kein SolidCraft-Tab offen war, und verrät den Kursskripten die
+// Adresse der Erweiterung (für die Vorlese-Dateien).
 const RESET_SCRIPT = {
     id: 'reset-pending',
     matches: [APP_TABS],
-    js: ['reset-pending.js'],
+    js: ['reset-pending.js', 'lib/extension-base.js'],
     runAt: 'document_start'
 };
 
@@ -91,6 +94,7 @@ async function injectIntoOpenTabs () {
                 target: {tabId: tab.id}, world: 'MAIN', func: () => !!window.SolidcraftKurs
             });
             if (probe && probe.result) continue;
+            await chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['lib/extension-base.js']});
             await chrome.scripting.executeScript({target: {tabId: tab.id}, world: 'MAIN', files: PAGE_SCRIPTS.js});
         } catch (e) { /* Tab nicht erreichbar (z. B. verworfen) – lädt beim nächsten Öffnen ohnehin neu */ }
     }

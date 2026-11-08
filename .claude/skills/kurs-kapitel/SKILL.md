@@ -5,9 +5,15 @@ description: Schreibt neue Kapitel und Schritte für den SolidCraft-Einführungs
 
 # Kapitel für den SolidCraft-Einführungskurs schreiben
 
-Der Kurs läuft als Browser-Erweiterung in der SolidCraft-Web-App. Inhalte stehen in
-`course/course-data.js`; die Engine (`course/course.js`) prüft alle 200 ms einen Snapshot der
-App. **Für ein neues Kapitel wird nur `course-data.js` geändert.** Fehlt eine Prüf-Hilfe in
+Der Kurs läuft als Browser-Erweiterung in der SolidCraft-Web-App. Kapitel 1–6 und die gemeinsamen
+Bausteine (`helpers`) stehen in `course/course-data.js`; jedes weitere Kapitel ist eine eigene Datei
+`course/chapters/<id>.js` (Vorbild: `course/chapters/blech.js`), die sich mit
+`SolidcraftKursCourse.add(kapitel)` anmeldet und ihr Englisch mit `translate('en', id, {…}, phrases)`
+einträgt; die Datei wird in `background.js` (`PAGE_SCRIPTS.js`, vor `course/course.js`) registriert,
+der E2E-Ablauf liegt in `tests/plays/<id>.mjs`. Die Engine (`course/course.js`) prüft alle 200 ms
+einen Snapshot der App. Nur lesende Zusatzbefehle: `SolidcraftKursAccess.addRead({key, command, chapter})`
+→ `c.extra(key)`; Rohdaten: `c.doc()`, `c.ui()`. **Für ein neues Kapitel wird nur die Kapiteldatei
+(plus Registrierung) geändert.** Fehlt eine Prüf-Hilfe in
 `course/context.js` oder eine Zielart in `course/targets.js`, wird sie dort mit Test in
 `tests/` ergänzt – und das ausdrücklich gesagt.
 
@@ -32,7 +38,8 @@ App. **Für ein neues Kapitel wird nur `course-data.js` geändert.** Fehlt eine 
    in `course.chapters.<id>.steps`, neue kurze Aufgaben-/Hinweistexte und Suchbegriffe in `phrases`
    (Schlüssel = deutscher Text). Button-Namen wie in der jeweiligen SolidCraft-Oberfläche.
    `npm run check` listet alles, was fehlt.
-7. **Abschließen:** `CHANGELOG.md` und Kursübersicht im `README.md` aktualisieren.
+7. **Vorlesen:** `npm run audio` spricht die neuen Schritte ein (Texte gut vorlesbar schreiben).
+8. **Abschließen:** `CHANGELOG.md` und Kursübersicht im `README.md` aktualisieren.
 
 ## Aufbau eines Kapitels
 

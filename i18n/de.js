@@ -14,9 +14,14 @@
                 INSPECT: 'Prüfen', MANAGE: 'Verwalten', VIEW: 'Ansicht', 'SHEET METAL': 'Blech', SOLID: 'Volumenkörper', WELDMENTS: 'Schweissteile', PLASTIC: 'Kunststoff', MESH: 'Netz', UTILITIES: 'Werkzeuge'},
             panels: {CREATE: 'Erstellen', MODIFY: 'Ändern', ARRANGE: 'Anordnen', CONSTRUCT: 'Konstruktion',
                 CONFIGURE: 'Konfigurieren', CONSTRAIN: 'Abhängigkeiten', PATTERN: 'Muster', REFERENCE: 'Referenz',
-                INSPECT: 'Prüfen'}
+                INSPECT: 'Prüfen', EDIT: 'Bearbeiten', CONVERT: 'Konvertieren'}
         },
         ui: {
+            'btn.read': 'Vorlesen',
+            'btn.stopRead': 'Vorlesen beenden',
+            'menu.read': 'Vorlesen',
+            'read.unavailable': 'Vorlesen geht gerade nicht: Auf diesem Gerät ist keine passende Stimme installiert.',
+            'read.auto': 'Jeden Schritt automatisch vorlesen',
             'kind.info': 'Info',
             'kind.learn': 'Lernen',
             'kind.creative': 'Kreativ',

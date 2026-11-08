@@ -1,5 +1,22 @@
 # Änderungen
 
+## 0.5.0 – 2026-11-08
+
+### Neu
+- Acht neue Kapitel für alle Arbeitsbereiche von SolidCraft: Blech (Handyständer), Fläche (Vase),
+  Kunststoff (Dose mit Klick-Deckel), Schweissteile (Mini-Hocker), Zusammenbau und Einfügen (Windrad mit
+  Drehgelenk), Prüfen und Ansicht (Detektiv-Werkstatt), Verwalten (Baukasten mit Parametern) und der
+  Arbeitsbereich Rendern (Fotostudio) – zusammen 14 Kapitel mit 128 Schritten, alles auch auf Englisch
+- Vorlesen: 🔊 im Kursfenster liest den Schritt vor, im Menü lässt sich „automatisch vorlesen“ einschalten.
+  Mitgelieferte Sprachaufnahmen (Piper, Stimmen Thorsten und LJSpeech); fehlt eine, liest eine lokale
+  Stimme des Browsers – nie eine Online-Stimme
+- `npm run audio`, `npm run e2e:audio`; `npm run check` prüft, ob alle Aufnahmen zum Text passen
+
+### Intern
+- Kapitel als eigene Dateien `course/chapters/<id>.js` mit `add()`/`translate()` und gemeinsamen `helpers`
+- Kapitel können nur lesende App-Befehle anmelden (`addRead`, nur während das Kapitel offen ist);
+  Prüf-Kontext mit `c.doc()`, `c.ui()`, `c.extra()`
+
 ## 0.4.0 – 2026-11-07
 
 ### Neu

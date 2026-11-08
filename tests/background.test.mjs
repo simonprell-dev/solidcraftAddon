@@ -86,6 +86,26 @@ test('Installation: offene SolidCraft-Tabs ohne Kurs bekommen den Kurs sofort', 
     loadBackground(chrome);
     chrome.listeners.installed({reason: 'install'});
     await settle();
+    // Tab 7 bekommt Kurs und Erweiterungs-Adresse (zwei Einspielungen), Tab 8 hat den Kurs schon.
     const injected = chrome.log.filter(([op]) => op === 'inject').map(([, id]) => id);
-    assert.deepEqual(injected, [7]);
+    assert.deepEqual([...new Set(injected)], [7]);
+});
+
+test('Vorlesen: Adresse der Erweiterung kommt über die isolierte Welt, Vorleser lädt vor course.js', async () => {
+    const chrome = fakeChrome();
+    loadBackground(chrome);
+    chrome.listeners.installed({reason: 'install'});
+    await settle();
+    const always = chrome.scripts().find(s => s.id === 'reset-pending');
+    assert.ok(always.js.includes('lib/extension-base.js'));
+    const kurs = chrome.scripts().find(s => s.id === 'solidcraft-kurs').js;
+    assert.ok(kurs.indexOf('course/speech.js') < kurs.indexOf('course/course.js'));
+    assert.ok(kurs.indexOf('course/reader.js') >= 0 && kurs.indexOf('course/reader.js') < kurs.indexOf('course/course.js'));
+});
+
+test('Manifest gibt die Audiodateien für app.solidcraft.io frei', () => {
+    const m = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
+    const war = (m.web_accessible_resources || []).find(w => w.resources.includes('audio/*'));
+    assert.ok(war, 'audio/* fehlt');
+    assert.deepEqual(war.matches, ['https://app.solidcraft.io/*']);
 });

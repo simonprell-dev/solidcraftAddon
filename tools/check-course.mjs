@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import {fileURLToPath} from 'url';
 import {courseFiles} from './course-files.mjs';
+import {checkAudio} from './build-audio.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -87,9 +88,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const window = {};
     for (const f of courseFiles()) new Function('window', fs.readFileSync(path.join(root, f), 'utf8'))(window);
     const course = window.SolidcraftKursCourse;
-    const problems = [...checkCourse(course, knownCommands()), ...checkLanguages(), ...checkStoreLimits()];
+    const problems = [...checkCourse(course, knownCommands()), ...checkLanguages(), ...checkStoreLimits(), ...checkAudio()];
     problems.forEach(p => console.log(p));
     const steps = course.chapters.reduce((n, ch) => n + ch.steps.length, 0);
-    console.log(problems.length ? `${problems.length} Probleme` : `Kurs ok: ${course.chapters.length} Kapitel, ${steps} Schritte, Sprachen vollständig.`);
+    console.log(problems.length ? `${problems.length} Probleme` : `Kurs ok: ${course.chapters.length} Kapitel, ${steps} Schritte, Sprachen und Vorlese-Audios vollständig.`);
     process.exit(problems.length ? 1 : 0);
 }

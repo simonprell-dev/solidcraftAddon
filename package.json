@@ -1,6 +1,6 @@
 {
   "name": "einfuehrungskurs-solidcraft",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Browser-Erweiterung: geführter 3D-Konstruktionskurs für Kinder in SolidCraft",
   "private": true,
   "license": "MIT",
@@ -17,7 +17,9 @@
     "icons": "node tools/render-assets.mjs icons",
     "screenshots": "node tools/screenshots.mjs",
     "assets": "node tools/render-assets.mjs",
-    "pack": "node tools/pack.mjs"
+    "pack": "node tools/pack.mjs",
+    "audio": "node tools/build-audio.mjs",
+    "e2e:audio": "node tests/e2e-audio.mjs"
   },
   "devDependencies": {
     "puppeteer-core": "23.11.1"

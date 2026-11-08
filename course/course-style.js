@@ -61,6 +61,8 @@
     width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
 }
 .sk-icon-btn:hover { background: rgba(255, 255, 255, 0.2); }
+.sk-icon-btn.sk-on { background: #fff; color: #E8762C; }
+.sk-read-note { background: #FFF4E5; color: #8A4A00; border-radius: 8px; padding: 6px 10px; margin-bottom: 8px; font-size: 13px; }
 
 .sk-progress { display: flex; gap: 3px; padding: 6px 14px; background: var(--sk-soft); }
 .sk-pip { flex: 1; height: 6px; border-radius: 3px; background: #E5D6C8; }

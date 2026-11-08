@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "__MSG_extDescription__",
   "homepage_url": "https://simonprell-dev.github.io/solidcraftAddon/",
   "icons": {
@@ -28,5 +28,15 @@
   "host_permissions": [
     "https://app.solidcraft.io/*"
   ],
-  "default_locale": "de"
+  "default_locale": "de",
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "audio/*"
+      ],
+      "matches": [
+        "https://app.solidcraft.io/*"
+      ]
+    }
+  ]
 }

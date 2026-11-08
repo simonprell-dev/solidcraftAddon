@@ -14,9 +14,14 @@
                 INSPECT: 'Inspect', MANAGE: 'Manage', VIEW: 'View', 'SHEET METAL': 'Sheet Metal', SOLID: 'Solid', WELDMENTS: 'Weldments', PLASTIC: 'Plastic', MESH: 'Mesh', UTILITIES: 'Utilities'},
             panels: {CREATE: 'Create', MODIFY: 'Modify', ARRANGE: 'Arrange', CONSTRUCT: 'Construct',
                 CONFIGURE: 'Configure', CONSTRAIN: 'Constrain', PATTERN: 'Pattern', REFERENCE: 'Reference',
-                INSPECT: 'Inspect'}
+                INSPECT: 'Inspect', EDIT: 'Edit', CONVERT: 'Convert'}
         },
         ui: {
+            'btn.read': 'Read aloud',
+            'btn.stopRead': 'Stop reading',
+            'menu.read': 'Read aloud',
+            'read.unavailable': 'Reading aloud isn’t possible right now: no suitable voice is installed on this device.',
+            'read.auto': 'Read every step aloud automatically',
             'kind.info': 'Info',
             'kind.learn': 'Learn',
             'kind.creative': 'Create',
