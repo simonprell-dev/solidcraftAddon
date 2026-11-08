@@ -63,16 +63,44 @@
         const d = dims(b);
         return Math.min(...d) >= 8 && Math.max(...d) <= Math.min(...d) * 1.3;
     });
-    // Augen = Kreise in den Seiten-Skizzen (Flächenumriss + je ein Profil pro Kreis) – zählt nur,
-    // wenn schon etwas ausgeschnitten wurde. Unabhängig von Rundungen (die bringen Zylinderflächen mit).
+    // Augen = Kreise in den Seiten-Skizzen (Flächenumriss + je ein Profil pro Kreis), aber höchstens so
+    // viele, wie es ausgeschnittene Mulden (Zylinderflächen) gibt – gezeichnete, nicht ausgeschnittene
+    // Kreise zählen nicht. Rundungen (auch Zylinderflächen) kommen erst im nächsten Schritt.
     const pips = c => c.volume() < c.base.volume ?
-        c.sketches().reduce((n, s) => n + Math.max(0, (s.profiles || 0) - 1), 0) : 0;
+        Math.min(c.faceCount('cylinder'), c.sketches().reduce((n, s) => n + Math.max(0, (s.profiles || 0) - 1), 0)) : 0;
+    // Zuletzt in der Zeitleiste: eine Skizze mit Kreisen, die noch nicht ausgeschnitten ist.
+    const pendingCut = c => {
+        const tl = (c.doc().timeline || []).filter(f => !f.suppressed);
+        const last = tl[tl.length - 1];
+        const sk = c.sketches()[c.sketches().length - 1];
+        return !c.inSketch() && !!last && last.type === 'Sketch' && !!sk && (sk.profiles || 0) >= 2;
+    };
     const cylinderDone = c => !c.inSketch() && c.faceCount('cylinder') >= 1 && dims(c.largest())[2] >= 40;
     const shelled = c => c.newFeatures('ShellFeature') >= 1;
     const boxHigh = c => !c.inSketch() && c.bodyCount() >= 1 && Math.min(...dims(c.largest())) >= 15;
-    const rimDone = c => !c.inSketch() && c.newFeatures('ExtrudeFeature') >= 1 && c.volume() > c.base.volume + 100;
+    // Rand mit Deckel verbunden (kein eigener Körper) und so groß wie ein ganzer Rand – nicht nur der
+    // schmale Ring zwischen Plattenumriss und Rechteck (der wäre viel kleiner als die Platte).
+    const rimDone = c => {
+        if (c.inSketch() || c.newFeatures('ExtrudeFeature') < 1 || c.bodyCount() !== c.base.bodyCount) return false;
+        const added = c.volume() - c.base.volume;
+        const lid = newest(c);
+        return added > 100 && !!lid && added > 0.6 * ((lid.volume_mm3 || 0) - added);
+    };
     const newBody = c => !c.inSketch() && c.bodyCount() > c.base.bodyCount;
     const combined = c => c.newFeatures('CombineFeature') >= 1 || (c.base.bodyCount >= 2 && c.bodyCount() < c.base.bodyCount);
+    // Alle Teile zu einem verbunden – nicht nur eins von mehreren.
+    const allJoined = c => combined(c) && c.bodyCount() === 1;
+    // Neuer Körper, der mehr als 1 mm aus dem bisherigen Hauptkörper herausragt (Flosse außen am Rumpf).
+    const sticksOut = c => {
+        if (!newBody(c)) return false;
+        const f = newest(c);
+        const r = c.bodies().filter(b => b !== f).reduce((a, b) => (!a || (b.volume_mm3 || 0) > (a.volume_mm3 || 0) ? b : a), null);
+        if (!f || !f.bbox || !r || !r.bbox) return false;
+        return [0, 1, 2].some(i => f.bbox.max[i] > r.bbox.max[i] + 1 || f.bbox.min[i] < r.bbox.min[i] - 1);
+    };
+    // Schon extrudiert, aber das Maß passt nicht: zur Zeitleiste führen statt zu einer zweiten Extrusion.
+    const fixInTimeline = (text, ok) => ({target: 'handle:history:last', text,
+        done: c => c.inSketch() || c.bodyCount() === 0 || c.dialog() === 'solid.extrude' || ok(c)});
     const revolved = c => c.newFeatures('RevolveFeature') >= 1;
     const patterned = c => c.newFeatures('CircularPatternFeature') >= 1 || c.bodyCount() >= c.base.bodyCount + 2;
 
@@ -237,6 +265,7 @@
                     ],
                     hints: [
                         {target: 'tool:sketch.finish', text: 'Klicke auf „Skizze beenden“', done: c => !c.inSketch()},
+                        fixInTimeline('Zu dick? Doppelklick unten in der Zeitleiste auf die Extrusion', plateDone),
                         {target: 'tool:solid.extrude', text: 'Klicke auf „Extrudieren“',
                             done: c => extrudeOpen(c) || plateDone(c)},
                         {target: sketchTarget, text: 'Klicke in dein Rechteck',
@@ -269,9 +298,12 @@
                     kind: 'learn',
                     title: 'Den Namen herausheben',
                     text: '<p>Dein Name steht jetzt flach auf der Platte. Lass ihn herausstehen!</p>' +
-                        '<p>Beende die Skizze, klicke auf <b>Extrudieren</b> und wähle die <b>Buchstaben</b> aus. ' +
+                        '<p>Beende die Skizze, klicke auf <b>Extrudieren</b> und klicke <b>jeden Buchstaben einmal</b> an – ' +
+                        'nicht die Löcher in Buchstaben wie A, o oder e. ' +
                         'Tippe bei <b>Abstand</b> eine <b>2</b> ein. Bei <b>Operation</b> sollte <b>Verbinden</b> stehen – ' +
-                        'dann werden Platte und Buchstaben ein einziges Teil.</p>',
+                        'dann werden Platte und Buchstaben ein einziges Teil.</p>' +
+                        '<p>Steht nichts heraus? Dann liegt deine Skizze nicht auf der Oberseite. Mach mit <b>Strg + Z</b> ' +
+                        'alles bis vor die Skizze rückgängig und starte sie noch einmal – diesmal auf der Oberseite.</p>',
                     tasks: [
                         {text: 'Beende die Skizze', check: c => !c.inSketch()},
                         {text: 'Extrudiere den Text nach oben', check: textRaised}
@@ -279,7 +311,7 @@
                     hints: [
                         {target: 'tool:sketch.finish', text: 'Klicke auf „Skizze beenden“', done: c => !c.inSketch()},
                         {target: 'tool:solid.extrude', text: 'Klicke auf „Extrudieren“', done: c => extrudeOpen(c) || textRaised(c)},
-                        {target: topTarget, text: 'Klicke die Buchstaben an',
+                        {target: topTarget, text: 'Klicke jeden Buchstaben einmal an',
                             done: c => c.dialogPicked('Profiles') > 0 || !extrudeOpen(c) || textRaised(c)},
                         {target: 'dialog:Distance', text: 'Tippe 2 ein, dann OK', done: c => textRaised(c) || !extrudeOpen(c)}
                     ]
@@ -362,6 +394,7 @@
                         ...sketchHints({plane: 'plane:XY', planeText: 'Klicke auf die Bodenebene',
                             tool: 'tool:sketch.rectangle.two_point', toolText: 'Klicke auf „Rechteck“',
                             drawText: 'Klicke nacheinander zwei Ecken', done: plate(2.5, 6.5)}),
+                        fixInTimeline('Zu dick? Doppelklick unten in der Zeitleiste auf die Extrusion', plate(2.5, 6.5)),
                         ...extrudeHints({text: 'Tippe 4 ein, dann OK', done: plate(2.5, 6.5)})
                     ]
                 },
@@ -459,6 +492,7 @@
                         ...sketchHints({plane: 'plane:XY', planeText: 'Klicke auf die Bodenebene',
                             tool: 'tool:sketch.rectangle.two_point', toolText: 'Klicke auf „Rechteck“',
                             drawText: 'Klicke zwei Ecken (20 × 20)', done: cubeDone}),
+                        fixInTimeline('Kein Würfel? Doppelklick unten in der Zeitleiste auf die Extrusion', cubeDone),
                         ...extrudeHints({text: 'Tippe 20 ein, dann OK', done: cubeDone})
                     ]
                 },
@@ -481,7 +515,7 @@
                             drawTarget: zTop, drawText: 'Mitte klicken, dann ziehen',
                             drawn: circleOnFace, done: c => c.volume() < c.base.volume - 2}),
                         ...extrudeHints({pickText: 'Klicke in den Kreis', field: 'dialog:Operation',
-                            text: '„Ausschneiden“, Abstand 1, OK', done: c => c.volume() < c.base.volume - 2})
+                            text: '„Ausschneiden“, Abstand 1 – Vorschau nach innen? Dann OK', done: c => c.volume() < c.base.volume - 2})
                     ]
                 },
                 {
@@ -494,15 +528,21 @@
                         '<p>Brauchst du Hilfe, drücke auf <b>👆 Zeig mir wie</b>.</p>',
                     tasks: [
                         {text: 'Mindestens 6 Augen', check: c => pips(c) >= 6},
-                        {text: 'Alle 21 Augen (1 + 2 + 3 + 4 + 5 + 6)', check: c => pips(c) >= 21}
+                        {text: 'Alle 21 Augen (1 + 2 + 3 + 4 + 5 + 6)', check: c => pips(c) === 21}
                     ],
                     hints: [
                         {target: 'tool:sketch.create', text: 'Neue Skizze auf der nächsten Seite',
-                            done: c => c.inSketch() || c.dialog() === 'sketch.create' || pips(c) >= 21},
+                            done: c => c.inSketch() || c.dialog() === 'sketch.create' || extrudeOpen(c) || pendingCut(c) || pips(c) >= 21},
                         {target: 'viewport', text: 'Klicke auf die nächste Seite',
                             done: c => c.inSketch() || c.dialog() !== 'sketch.create' || pips(c) >= 21},
                         {target: 'tool:sketch.circle.center', text: 'Kreise zeichnen',
-                            done: c => !c.inSketch() || c.tool() === 'sketch.circle.center' || pips(c) >= 21}
+                            done: c => !c.inSketch() || c.tool() === 'sketch.circle.center' || pips(c) >= 21},
+                        {target: 'tool:sketch.finish', text: 'Klicke auf „Skizze beenden“',
+                            done: c => !c.inSketch() || pips(c) >= 21},
+                        {target: 'tool:solid.extrude', text: 'Klicke auf „Extrudieren“',
+                            done: c => extrudeOpen(c) || !pendingCut(c) || pips(c) >= 21},
+                        {target: 'dialog:Operation', text: 'Kreise anklicken, „Ausschneiden“, Abstand 1 – Vorschau nach innen? Dann OK',
+                            done: c => !extrudeOpen(c) || pips(c) >= 21}
                     ]
                 },
                 {
@@ -626,7 +666,7 @@
                     hints: [
                         ...sketchHints({plane: 'plane:XY', planeText: 'Klicke auf die Bodenebene',
                             tool: 'tool:sketch.circle.center', toolText: 'Klicke auf „Kreis“',
-                            drawText: 'Neben dem Köcher zeichnen', done: newBody}),
+                            drawText: 'Etwas überlappend zeichnen', done: newBody}),
                         ...extrudeHints({pickText: 'Klicke in den neuen Kreis', field: 'dialog:Operation',
                             text: '„Neuer Körper“, Abstand 60, OK', done: newBody})
                     ]
@@ -639,7 +679,7 @@
                         'großen Köcher an, als <b>Werkzeugkörper</b> das Fach, und klicke auf <b>OK</b>.</p>',
                     tasks: [
                         {text: 'Höhle das Fach aus', check: shelled},
-                        {text: 'Verbinde beide Körper', check: combined}
+                        {text: 'Verbinde beide Körper', check: allJoined}
                     ],
                     hints: [
                         {target: 'tool:solid.shell', text: 'Klicke auf „Hülle“', done: c => c.dialog() === 'solid.shell' || shelled(c)},
@@ -688,6 +728,9 @@
                         '<p>Wichtig beim 3D-Druck: Zwei Teile, die ineinander sollen, brauchen <b>Spiel</b> ' +
                         '(auch <b>Toleranz</b> genannt). Macht man den Deckelrand genau so groß wie die Öffnung, klemmt er. ' +
                         'Mit <b>0,2 mm</b> Luft pro Seite passt er.</p>' +
+                        '<p>Zwei Werkzeuge brauchst du dafür: <b>Hülle</b> höhlt einen Körper aus, übrig bleibt eine Wand. ' +
+                        'Und stellst du beim Extrudieren die <b>Operation</b> auf <b>Neuer Körper</b>, entsteht ein zweites, ' +
+                        'eigenes Teil.</p>' +
                         '<p>Die Hand hilft nur, wenn du auf <b>👆 Zeig mir wie</b> drückst.</p>'
                 },
                 {
@@ -713,13 +756,15 @@
                     kind: 'learn',
                     title: 'Die Deckelplatte',
                     text: '<p>Der Deckel entsteht <b>neben</b> der Box. Zeichne auf der Bodenebene ein zweites Rechteck ' +
-                        '<b>60 × 40 mm</b> mit etwas Abstand zur Box.</p>' +
+                        '<b>60 × 40 mm</b> mit <b>Rechteck vom Mittelpunkt</b>: Setz die Mitte rechts auf die rote ' +
+                        '<b>X-Achse</b>, bei etwa <b>100 mm</b>. So liegt der Deckel mit Abstand neben der Box, und du ' +
+                        'findest seine Mitte nachher wieder.</p>' +
                         '<p>Extrudiere es <b>2 mm</b> und wähle bei <b>Operation</b> den Eintrag <b>Neuer Körper</b>.</p>',
                     tasks: [{text: 'Deckelplatte als neuer Körper', check: c => newBody(c) && Math.min(...dims(newest(c))) <= 4}],
                     hints: [
                         ...sketchHints({plane: 'plane:XY', planeText: 'Klicke auf die Bodenebene',
-                            tool: 'tool:sketch.rectangle.two_point', toolText: 'Klicke auf „Rechteck“',
-                            drawText: 'Neben der Box: 60 × 40', done: newBody}),
+                            tool: 'tool:sketch.rectangle.center', search: 'Rechteck vom Mittelpunkt', toolText: '„Rechteck vom Mittelpunkt“',
+                            drawText: 'Mitte bei 100 mm auf der X-Achse, 60 × 40', done: newBody}),
                         ...extrudeHints({field: 'dialog:Operation', text: '„Neuer Körper“, Abstand 2, OK', done: newBody})
                     ]
                 },
@@ -728,8 +773,9 @@
                     title: 'Der Rand mit Spiel',
                     text: '<p>Unter den Deckel kommt ein Rand, der in die Öffnung greift. Rechne:</p>' +
                         '<p>Öffnung 56 × 36 mm, minus 2 × 0,2 mm Spiel = <b>55,6 × 35,6 mm</b>.</p>' +
-                        '<p>Starte eine <b>Neue Skizze</b> auf der Deckelplatte und zeichne ein Rechteck in diesem Maß – ' +
-                        'mittig, mit <b>Rechteck vom Mittelpunkt</b> geht es am leichtesten. Extrudiere es <b>3 mm</b> mit ' +
+                        '<p>Starte eine <b>Neue Skizze</b> auf der Deckelplatte und zeichne mit <b>Rechteck vom Mittelpunkt</b> ' +
+                        'ein Rechteck in diesem Maß – die Mitte wieder bei <b>100 mm</b> auf der X-Achse, genau in der Mitte ' +
+                        'der Deckelplatte. Extrudiere es <b>3 mm</b> mit ' +
                         '<b>Verbinden</b>. Gedruckt wird der Deckel so, wie er daliegt – zum Aufsetzen drehst du ihn einfach um.</p>',
                     tasks: [
                         {text: 'Rand auf den Deckel gebaut', check: rimDone},
@@ -738,7 +784,7 @@
                     hints: [
                         ...sketchHints({plane: lidTop, planeText: 'Klicke auf die Deckelplatte',
                             tool: 'tool:sketch.rectangle.center', search: 'Rechteck vom Mittelpunkt', toolText: '„Rechteck vom Mittelpunkt“',
-                            drawText: 'Mitte, dann 55,6 × 35,6', done: rimDone}),
+                            drawText: 'Mitte bei 100 mm, dann 55,6 × 35,6', done: rimDone}),
                         ...extrudeHints({pickText: 'Klicke in das Rechteck', text: 'Abstand 3, „Verbinden“, OK', done: rimDone})
                     ]
                 },
@@ -823,11 +869,12 @@
                     kind: 'learn',
                     title: 'Eine Flosse',
                     text: '<p>Starte wieder eine <b>Neue Skizze</b> auf der Frontebene und zeichne mit <b>Linie</b> ein ' +
-                        '<b>Dreieck</b> rechts am Rumpf, dort wo du mit der halben Rakete angefangen hast. Das Dreieck soll ' +
-                        '<b>etwa 1 mm in den Rumpf hineinragen</b> – sonst hält die Flosse nach dem Drucken nicht.</p>' +
+                        '<b>Dreieck</b> unten rechts am Rumpf, zum Beispiel mit den Ecken <b>(9|0)</b>, <b>(25|0)</b> und ' +
+                        '<b>(9|25)</b>. So ragt es <b>etwa 1 mm in den Rumpf hinein</b> – sonst hält die Flosse nach dem ' +
+                        'Drucken nicht – und schaut weit genug heraus.</p>' +
                         '<p>Extrudiere es <b>2 mm</b>: Stell die <b>Richtung</b> auf <b>Symmetrisch</b> und die ' +
                         '<b>Operation</b> auf <b>Neuer Körper</b>.</p>',
-                    tasks: [{text: 'Flosse als neuer Körper', check: newBody}],
+                    tasks: [{text: 'Flosse als neuer Körper', check: sticksOut}],
                     hints: [
                         ...sketchHints({plane: 'plane:XZ', planeText: 'Klicke auf die Frontebene',
                             tool: 'tool:sketch.line', toolText: 'Klicke auf „Linie“',
@@ -858,7 +905,7 @@
                     title: 'Alles verbinden',
                     text: '<p>Zum Drucken soll die Rakete <b>ein</b> Teil sein. Suche nach <b>Kombinieren</b>: ' +
                         '<b>Zielkörper</b> ist der Rumpf, <b>Werkzeugkörper</b> sind alle drei Flossen. <b>OK</b>.</p>',
-                    tasks: [{text: 'Rumpf und Flossen verbunden', check: combined}],
+                    tasks: [{text: 'Rumpf und Flossen verbunden', check: allJoined}],
                     hints: [
                         {target: 'tool:solid.combine', search: 'Kombinieren', text: 'Suche „Kombinieren“',
                             done: c => c.dialog() === 'solid.combine' || combined(c)},

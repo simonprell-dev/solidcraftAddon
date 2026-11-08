@@ -111,7 +111,9 @@ test('Würfel „Alle Seiten“: bei 21 Augen sind alle Hinweise erledigt', () =
     // Würfel nach dem ersten Auge (Schrittbeginn) und nach allen Seiten: Skizzen mit 1 + n Profilen.
     const cube = vol => body('Body1', [-10, -10, 0], [10, 10, 20], {volume_mm3: vol});
     const sides = [1, 6, 2, 5, 3, 4].map((n, i) => ({id: i + 2, profiles: n + 1}));
-    const c = mk({doc: {bodies: [cube(7900)], sketches: [{id: 1, profiles: 1}, ...sides]},
+    // Jedes ausgeschnittene Auge ist eine Mulde mit Zylinderfläche (so misst SolidCraft es).
+    const c = mk({doc: {bodies: [body('Body1', [-10, -10, 0], [10, 10, 20], {volume_mm3: 7900, face_types: {plane: 6, cylinder: 21}})],
+        sketches: [{id: 1, profiles: 1}, ...sides]},
         baseDoc: {bodies: [cube(7987)], sketches: [{id: 1, profiles: 1}, sides[0]]}});
     assert.equal(active(step, c), undefined);
     assert.equal(step.tasks[1].check(c), true);

@@ -127,9 +127,12 @@
                                 '<p>Tip: a text height of about <b>12 mm</b> fits nicely on an 80 mm tag.</p>'},
                         {title: 'Raise your name',
                             text: '<p>Your name is flat on the plate now. Let it stand out!</p>' +
-                                '<p>Finish the sketch, click <b>Extrude</b> and select the <b>letters</b>. ' +
+                                '<p>Finish the sketch, click <b>Extrude</b> and click <b>each letter once</b> – ' +
+                                'not the holes inside letters like A, o or e. ' +
                                 'Type <b>2</b> into <b>Distance</b>. <b>Operation</b> should say <b>Join</b> – ' +
-                                'then the plate and the letters become one single part.</p>'},
+                                'then the plate and the letters become one single part.</p>' +
+                                '<p>Nothing sticks out? Then your sketch is not on the top face. Press <b>Ctrl + Z</b> until ' +
+                                'everything back to before the sketch is undone, and start it again – this time on the top face.</p>'},
                         {title: 'Admire your tag',
                             text: '<p>Done – your name tag is finished! 🎉</p>' +
                                 '<p>Turn it with the view cube and look at it from every side. If you like, give it a colour: ' +
@@ -272,6 +275,9 @@
                                 '<p>Important for 3D printing: two parts that go into each other need some <b>play</b> ' +
                                 '(also called <b>clearance</b> or <b>tolerance</b>). If the lid’s rim is exactly as big as the opening, ' +
                                 'it gets stuck. With <b>0.2 mm</b> of air on each side, it fits.</p>' +
+                                '<p>You need two tools for it: <b>Shell</b> hollows out a body and leaves a wall. ' +
+                                'And if you set the <b>Operation</b> to <b>New Body</b> when extruding, you get a second, ' +
+                                'separate part.</p>' +
                                 '<p>The hand only helps when you press <b>👆 Show me how</b>.</p>'},
                         {title: 'The box',
                             text: '<p>On the ground plane, draw a rectangle <b>60 × 40 mm</b> and extrude it <b>30 mm</b> high.</p>' +
@@ -279,13 +285,16 @@
                                 '<b>56 × 36 mm</b> on the inside (60 − 2 × 2 and 40 − 2 × 2).</p>'},
                         {title: 'The lid plate',
                             text: '<p>The lid is built <b>next to</b> the box. On the ground plane, draw a second rectangle ' +
-                                '<b>60 × 40 mm</b> with some space to the box.</p>' +
+                                '<b>60 × 40 mm</b> with <b>Center Rectangle</b>: put its centre on the red <b>X axis</b>, ' +
+                                'at about <b>100 mm</b>. That way the lid lies apart from the box, and you can find its ' +
+                                'centre again later.</p>' +
                                 '<p>Extrude it <b>2 mm</b> and choose <b>New Body</b> under <b>Operation</b>.</p>'},
                         {title: 'The rim with clearance',
                             text: '<p>Under the lid goes a rim that reaches into the opening. Let’s calculate:</p>' +
                                 '<p>Opening 56 × 36 mm, minus 2 × 0.2 mm clearance = <b>55.6 × 35.6 mm</b>.</p>' +
-                                '<p>Start a <b>New Sketch</b> on the lid plate and draw a rectangle of that size – centred; ' +
-                                '<b>Center Rectangle</b> makes that easiest. Extrude it <b>3 mm</b> with <b>Join</b>. ' +
+                                '<p>Start a <b>New Sketch</b> on the lid plate and use <b>Center Rectangle</b> to draw a ' +
+                                'rectangle of that size – centre again at <b>100 mm</b> on the X axis, right in the middle of ' +
+                                'the lid plate. Extrude it <b>3 mm</b> with <b>Join</b>. ' +
                                 'The lid is printed just the way it lies – to put it on, simply turn it over.</p>'},
                         {title: 'Does it fit?',
                             text: '<p>Turn your parts and compare: is the lid’s rim <b>a tiny bit smaller</b> than the opening of the box?</p>' +
@@ -326,8 +335,9 @@
                                 'In your printer’s program you simply stand it the right way up.</p>'},
                         {title: 'A fin',
                             text: '<p>Start another <b>New Sketch</b> on the front plane and use <b>Line</b> to draw a <b>triangle</b> ' +
-                                'on the right of the body, where you started the half rocket. The triangle should ' +
-                                '<b>reach about 1 mm into the body</b> – otherwise the fin won’t hold after printing.</p>' +
+                                'at the bottom right of the body, for example with the corners <b>(9|0)</b>, <b>(25|0)</b> and ' +
+                                '<b>(9|25)</b>. That way it <b>reaches about 1 mm into the body</b> – otherwise the fin won’t hold ' +
+                                'after printing – and sticks out far enough.</p>' +
                                 '<p>Extrude it <b>2 mm</b>: set the <b>Direction</b> to <b>Symmetric</b> and the <b>Operation</b> to <b>New Body</b>.</p>'},
                         {title: 'Three fins',
                             text: '<p>One fin is not enough. Search for <b>Circular Pattern</b> at the top. Choose your fin as the ' +
@@ -374,6 +384,15 @@
             'Klicke hierhin und tippe deinen Namen': 'Click here and type your name',
             'Extrudiere den Text nach oben': 'Extrude the text upwards',
             'Klicke die Buchstaben an': 'Click the letters',
+            'Klicke jeden Buchstaben einmal an': 'Click each letter once',
+            'Zu dick? Doppelklick unten in der Zeitleiste auf die Extrusion': 'Too thick? Double-click the extrusion in the timeline below',
+            'Kein Würfel? Doppelklick unten in der Zeitleiste auf die Extrusion': 'Not a cube? Double-click the extrusion in the timeline below',
+            '„Ausschneiden“, Abstand 1 – Vorschau nach innen? Dann OK': '“Cut”, distance 1 – preview pointing in? Then OK',
+            'Kreise anklicken, „Ausschneiden“, Abstand 1 – Vorschau nach innen? Dann OK':
+                'Click the circles, “Cut”, distance 1 – preview pointing in? Then OK',
+            'Etwas überlappend zeichnen': 'Draw it overlapping a little',
+            'Mitte bei 100 mm auf der X-Achse, 60 × 40': 'Centre at 100 mm on the X axis, 60 × 40',
+            'Mitte bei 100 mm, dann 55,6 × 35,6': 'Centre at 100 mm, then 55.6 × 35.6',
             'Tippe 2 ein, dann OK': 'Type 2, then OK',
             'Schau dir dein Schild von unten an': 'Look at your tag from below',
             'Gib deinem Schild eine Farbe': 'Give your tag a colour',

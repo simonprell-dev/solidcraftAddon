@@ -6,7 +6,7 @@
 - Acht neue Kapitel für alle Arbeitsbereiche von SolidCraft: Blech (Handyständer), Fläche (Vase),
   Kunststoff (Dose mit Klick-Deckel), Schweissteile (Mini-Hocker), Zusammenbau und Einfügen (Windrad mit
   Drehgelenk), Prüfen und Ansicht (Detektiv-Werkstatt), Verwalten (Baukasten mit Parametern) und der
-  Arbeitsbereich Rendern (Fotostudio) – zusammen 14 Kapitel mit 128 Schritten, alles auch auf Englisch
+  Arbeitsbereich Rendern (Fotostudio) – zusammen 14 Kapitel mit 129 Schritten, alles auch auf Englisch
 - Vorlesen: 🔊 im Kursfenster liest den Schritt vor, im Menü lässt sich „automatisch vorlesen“ einschalten.
   Mitgelieferte Sprachaufnahmen (Piper, Stimmen Thorsten und LJSpeech); fehlt eine, liest eine lokale
   Stimme des Browsers – nie eine Online-Stimme
@@ -21,6 +21,19 @@
   kurzer Pause zu „OK“ geführt („Fertig eingetragen? Dann klicke auf „OK““) – SolidCraft verrät die
   Feldwerte nicht, daher zählt das Tippen
 - Die Sprechblase verdeckt nie mehr „OK“ oder „Abbrechen“ im Dialog
+
+### Kurs-Audit (alle 128 Schritte mit echtem SolidCraft nachgebaut)
+- Vase: Profil-Ecken werden jetzt mit „Vollrundung“ abgerundet – vorher scheiterte „Dicke vergeben“ immer
+- Würfel: zählt nur ausgeschnittene Augen und verlangt genau 21; Hand führt bis zum Ausschneiden
+- Rakete: Flosse muss aus dem Rumpf ragen (Beispielpunkte im Text); Köcher/Rakete: am Ende ein Körper
+- Box: Rand muss mit dem Deckel verbunden und ein ganzer Rand sein; Deckel mittig auf der X-Achse
+- Dose mit Klick-Deckel: neuer Schritt „Ein Fenster zum Einrasten“, ehrlicher Lippen-Text, Füßchen per Muster
+- Blech: Lehne/Auflage nur nach oben, kleinere Schwelle für die Blechdicke, Platte 70 × 40 mm
+- Windrad: richtige Hand beim Rotor, Mast (nicht Rotor) muss fixiert sein, Normteil aus dem Mast schieben
+- Mini-Hocker: zu dünne Rohre zählen nicht, „Alle Linien“ wird geprüft, Hand trifft die Linien
+- Detektiv-Werkstatt: Messpunkt auf der Randkante, Stift auf halber Höhe, Schnitt vorher aus, Ansicht über den Browser
+- Fotostudio: „Wood“ statt „Holz“ in der englischen Bibliothek, keine Hand-Schleife beim Zurückstellen der Methode
+- „Zu dick?“-Hinweise führen zur Zeitleiste statt zu einer zweiten Extrusion
 
 ### Store
 - Die Erweiterung ist im Chrome Web Store: README und Projektseite verlinken den Eintrag

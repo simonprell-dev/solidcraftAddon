@@ -24,6 +24,8 @@
     const bossed = made('BossFeature');
     const rested = made('RestFeature');
     const snapped = made('SnapFitFeature');
+    // Fenster in der Dosenwand: ein neuer Schnitt, der der Dose (größter Körper) Volumen nimmt.
+    const windowCut = c => !c.inSketch() && c.newFeatures('ExtrudeFeature') >= 1 && c.volume() < c.base.volume - 10;
     const lidDone = c => newBody(c) && Math.min(...dims(newest(c))) <= 4;
     const open = cmd => c => c.dialog() === cmd;
 
@@ -34,7 +36,10 @@
     };
     const rimSpot = at((b, m) => [b.bbox.max[0] - 1, m[1], b.bbox.max[2]]);
     // Boden innen: zur hinteren Ecke hin, dort ist er in der Startansicht sichtbar (Mitte liegt hinter der Wand).
-    const floorSpot = at((b, m) => [m[0] - dims(b)[0] * 0.33, m[1] + dims(b)[1] * 0.37, b.bbox.min[2] + 2]);
+    const floorSpot = at((b, m) => [m[0] - dims(b)[0] * 0.33, m[1] + dims(b)[1] * 0.25, b.bbox.min[2] + 2]);
+    // Vordere lange Außenwand: Mitte (für die Skizze) und Stelle des Fensters 8 mm unter dem Rand.
+    const wallSpot = at((b, m) => [m[0], b.bbox.min[1], m[2]]);
+    const windowSpot = at((b, m) => [m[0], b.bbox.min[1], b.bbox.max[2] - 10]);
     const bottomSpot = at((b, m) => [m[0] + dims(b)[0] * 0.3, m[1] + dims(b)[1] * 0.3, b.bbox.min[2]]);
     const lidSpot = c => {
         const b = newest(c);
@@ -69,7 +74,7 @@
                 text: '<p>Du baust eine <b>Dose mit Klick-Deckel</b> – so wie die Gehäuse von Fernbedienungen oder Spielzeug. ' +
                     'Solche Teile sind meistens aus <b>Kunststoff</b>, also Plastik.</p>' +
                     '<p>Für Kunststoffteile hat SolidCraft eigene Werkzeuge:</p>' +
-                    '<ul><li><b>Lippe</b> – ein schmaler Rand oben auf der Wand, damit der Deckel nicht verrutscht</li>' +
+                    '<ul><li><b>Lippe</b> – ein schmaler Rand oben auf der Wand, auf dem der Deckel sitzt</li>' +
                     '<li><b>Ansatz</b> – ein kleiner Turm mit Loch für eine Schraube (Profis sagen <b>Schraubdom</b>)</li>' +
                     '<li><b>Auflage</b> – kleine Füßchen oder Stützen</li>' +
                     '<li><b>Rastverbindung</b> – ein biegsamer Haken, der hörbar einrastet: <b>Klick!</b></li>' +
@@ -127,8 +132,9 @@
             {
                 kind: 'learn',
                 title: 'Die Lippe',
-                text: '<p>Damit der Deckel später nicht verrutscht, bekommt die Dose oben eine <b>Lippe</b>: ' +
-                    'einen schmalen Rand, der über die Wand hinausragt.</p>' +
+                text: '<p>Damit der Deckel später gut sitzt, bekommt die Dose oben eine <b>Lippe</b>: ' +
+                    'einen schmalen Rand, der über die Wand hinausragt. Ganz fest führt sie den Deckel erst, wenn der ' +
+                    'Deckel eine passende Rille (Nut) hat – die kannst du in der Challenge bauen.</p>' +
                     '<p>Klicke im Register <b>Modell</b> auf <b>Erstellen ▾</b> und ganz unten auf <b>Lippe</b>. ' +
                     'Klicke bei <b>Randfläche</b> oben auf den Rand der Dosenwand. Bei <b>Typ</b> bleibt <b>Lippe</b>. ' +
                     'Ein guter Vorschlag ist <b>Breite 1 mm</b> und <b>Höhe 2 mm</b>. Klicke auf <b>OK</b>.</p>',
@@ -164,7 +170,7 @@
                     '<p>Öffne <b>Erstellen ▾</b> und klicke auf <b>Auflage</b>. Dreh die Ansicht, bis du den <b>Boden von unten</b> ' +
                     'siehst, und klicke bei <b>Position</b> in eine Ecke der Unterseite. <b>Form Rund</b>, ' +
                     '<b>Durchmesser 6 mm</b> und <b>Höhe 1 mm</b> passen gut. Klicke auf <b>OK</b>.</p>' +
-                    '<p>Mach danach noch drei weitere Füßchen in die anderen Ecken – oder spiegle sie mit <b>Spiegeln</b>.</p>',
+                    '<p>Mach danach noch drei weitere Füßchen in die anderen Ecken – einzeln oder mit <b>Muster</b> verteilt.</p>',
                 tasks: [{text: 'Füßchen unter die Dose gebaut', check: rested}],
                 hints: [
                     ...plasticTool('plastic.rest', 'Auflage', rested),
@@ -197,13 +203,36 @@
                     '<p>Öffne <b>Erstellen ▾</b> und klicke auf <b>Rastverbindung</b>. Klicke bei <b>Position</b> auf den Deckel, ' +
                     'etwa <b>3 mm vom langen Rand</b> entfernt. Ein guter Vorschlag: <b>Länge 12 mm</b>, <b>Dicke 1,5 mm</b>, ' +
                     '<b>Breite 6 mm</b>. <b>Fangtiefe</b> ist, wie weit die Nase heraussteht – <b>1 mm</b> reicht. Klicke auf <b>OK</b>.</p>' +
-                    '<p>Bau am anderen langen Rand einen zweiten Haken, dann hält der Deckel von beiden Seiten.</p>',
+                    '<p>Die Nase muss beim Zudrücken irgendwo einrasten können – dafür schneidest du gleich ein kleines ' +
+                    '<b>Fenster</b> in die Dosenwand. Einen zweiten Haken am anderen langen Rand kannst du auch bauen.</p>',
                 tasks: [{text: 'Rastverbindung auf den Deckel gebaut', check: snapped}],
                 hints: [
                     ...plasticTool('plastic.snap_fit', 'Rastverbindung', snapped),
                     {target: lidSpot, text: 'Klicke nah am Rand auf den Deckel',
                         done: c => c.dialogPicked('Position') > 0 || !open('plastic.snap_fit')(c) || snapped(c)},
                     {target: 'dialog:Length', text: 'Länge 12, Dicke 1,5, OK', done: c => snapped(c) || !open('plastic.snap_fit')(c)}
+                ]
+            },
+            {
+                kind: 'learn',
+                title: 'Ein Fenster zum Einrasten',
+                text: '<p>Damit es wirklich <b>Klick!</b> macht, braucht die Nase des Hakens ein Loch in der Dosenwand, ' +
+                    'in das sie springen kann.</p>' +
+                    '<p>Starte eine <b>Neue Skizze</b> auf der vorderen langen <b>Außenwand</b> der Dose. Zeichne ein kleines ' +
+                    '<b>Rechteck</b>: etwa <b>7 mm breit</b> und <b>3 mm hoch</b>, in der Mitte der Wand, mit der Oberkante ' +
+                    'etwa <b>8 mm unter dem oberen Rand</b>. Genau dort sitzt die Nase, wenn der Deckel umgedreht auf der Dose liegt.</p>' +
+                    '<p>Beende die Skizze und <b>extrudiere</b> das Rechteck: <b>Operation Ausschneiden</b>, <b>Abstand 2</b> ' +
+                    '(so dick ist die Wand). Zeigt die Vorschau nach außen, dreh die <b>Richtung</b> um. Klicke auf <b>OK</b>.</p>' +
+                    '<p>Hast du zwei Haken gebaut? Dann bekommt die hintere Wand auch ein Fenster.</p>',
+                tasks: [{text: 'Fenster in die Dosenwand geschnitten', check: windowCut}],
+                hints: [
+                    {target: 'tab:MODEL', text: 'Klicke auf das Register „Modell“',
+                        done: c => c.has('toolbar:sketch.create') || c.inSketch() || windowCut(c)},
+                    ...sketchHints({plane: wallSpot, planeText: 'Klicke auf die vordere Außenwand',
+                        tool: 'tool:sketch.rectangle.two_point', toolText: 'Klicke auf „Rechteck“',
+                        drawTarget: windowSpot, drawText: '7 × 3 mm, 8 mm unter dem Rand', done: windowCut}),
+                    ...extrudeHints({pickText: 'Klicke in das kleine Rechteck', field: 'dialog:Operation',
+                        text: '„Ausschneiden“, Abstand 2, nach innen, OK', done: windowCut})
                 ]
             },
             {
@@ -230,7 +259,7 @@
                 text: '<p>You’ll build a <b>box with a snap-on lid</b> – just like the cases of remote controls or toys. ' +
                     'Parts like that are usually made of <b>plastic</b>.</p>' +
                     '<p>SolidCraft has its own tools for plastic parts:</p>' +
-                    '<ul><li><b>Lip</b> – a narrow rim on top of the wall, so the lid doesn’t slide around</li>' +
+                    '<ul><li><b>Lip</b> – a narrow rim on top of the wall that the lid sits on</li>' +
                     '<li><b>Boss</b> – a little tower with a hole for a screw</li>' +
                     '<li><b>Rest</b> – little feet or supports</li>' +
                     '<li><b>Snap Fit</b> – a bendy hook that clicks into place: <b>click!</b></li>' +
@@ -253,8 +282,9 @@
                     '<p>Right next to it is <b>Plastic Rules</b> (Manage Plastic Rules). There you can look at and change ' +
                     'the sizes of a rule, for example the <b>Thickness</b> or the <b>Clearance</b>.</p>'},
             {title: 'The lip',
-                text: '<p>So that the lid won’t slide around later, the box gets a <b>lip</b> on top: ' +
-                    'a narrow rim that sticks up above the wall.</p>' +
+                text: '<p>So that the lid sits well later, the box gets a <b>lip</b> on top: ' +
+                    'a narrow rim that sticks up above the wall. It only guides the lid firmly once the lid has a ' +
+                    'matching channel (groove) – you can build that in the challenge.</p>' +
                     '<p>In the <b>Model</b> tab, click <b>Create ▾</b> and then <b>Lip</b> at the very bottom. ' +
                     'For <b>Rim face</b>, click the top edge of the box wall. The <b>Type</b> stays <b>Lip</b>. ' +
                     'A good suggestion is <b>Width 1 mm</b> and <b>Height 2 mm</b>. Click <b>OK</b>.</p>'},
@@ -270,7 +300,7 @@
                     '<p>Open <b>Create ▾</b> and click <b>Rest</b>. Turn the view until you can see the <b>bottom from below</b>, ' +
                     'and for <b>Position</b> click a corner of the underside. <b>Shape Round</b>, ' +
                     '<b>Diameter 6 mm</b> and <b>Height 1 mm</b> work well. Click <b>OK</b>.</p>' +
-                    '<p>Then make three more feet in the other corners – or copy them with <b>Mirror</b>.</p>'},
+                    '<p>Then make three more feet in the other corners – one by one or spread out with <b>Pattern</b>.</p>'},
             {title: 'The lid',
                 text: '<p>Now for the lid. It is built <b>next to</b> the box: draw a rectangle of <b>60 × 40 mm</b> ' +
                     'on the ground plane, with a little space to the box.</p>' +
@@ -283,7 +313,16 @@
                     '<p>Open <b>Create ▾</b> and click <b>Snap Fit</b>. For <b>Position</b>, click on the lid, ' +
                     'about <b>3 mm from the long edge</b>. A good suggestion: <b>Length 12 mm</b>, <b>Thickness 1.5 mm</b>, ' +
                     '<b>Width 6 mm</b>. <b>Catch Depth</b> is how far the nose sticks out – <b>1 mm</b> is enough. Click <b>OK</b>.</p>' +
-                    '<p>Build a second hook on the other long edge, then the lid holds from both sides.</p>'},
+                    '<p>The nose needs somewhere to click into when you press the lid on – so next you cut a small ' +
+                    '<b>window</b> into the box wall. You can also build a second hook on the other long edge.</p>'},
+            {title: 'A window to click into',
+                text: '<p>To really go <b>click!</b>, the nose of the hook needs a hole in the box wall to spring into.</p>' +
+                    '<p>Start a <b>New Sketch</b> on the long front <b>outer wall</b> of the box. Draw a small ' +
+                    '<b>Rectangle</b>: about <b>7 mm wide</b> and <b>3 mm high</b>, in the middle of the wall, with its top edge ' +
+                    'about <b>8 mm below the top rim</b>. That is exactly where the nose sits when the lid lies upside down on the box.</p>' +
+                    '<p>Finish the sketch and <b>extrude</b> the rectangle: <b>Operation Cut</b>, <b>Distance 2</b> ' +
+                    '(that is how thick the wall is). If the preview points outwards, flip the <b>Direction</b>. Click <b>OK</b>.</p>' +
+                    '<p>Did you build two hooks? Then the back wall gets a window too.</p>'},
             {title: 'Challenge: pro box',
                 text: '<p>Pick at least one idea – this time without the hand:</p>' +
                     '<ul><li>Build the lid as a <b>flat box</b> (6 mm high, hollowed out with Shell). Then give its rim ' +
@@ -320,6 +359,11 @@
         'Neben der Dose: 60 × 40': 'Next to the box: 60 × 40',
         'Rastverbindung auf den Deckel gebaut': 'Snap fit built on the lid',
         'Klicke nah am Rand auf den Deckel': 'Click the lid near the edge',
-        'Länge 12, Dicke 1,5, OK': 'Length 12, thickness 1.5, OK'
+        'Länge 12, Dicke 1,5, OK': 'Length 12, thickness 1.5, OK',
+        'Fenster in die Dosenwand geschnitten': 'Window cut into the box wall',
+        'Klicke auf die vordere Außenwand': 'Click the front outer wall',
+        '7 × 3 mm, 8 mm unter dem Rand': '7 × 3 mm, 8 mm below the rim',
+        'Klicke in das kleine Rechteck': 'Click inside the small rectangle',
+        '„Ausschneiden“, Abstand 2, nach innen, OK': '“Cut”, distance 2, inwards, OK'
     });
 })();

@@ -42,7 +42,8 @@
     const rim = c => {
         const b = c.largest();
         if (!b || !b.bbox) return 'viewport';
-        return world([b.bbox.max[0], (b.bbox.min[1] + b.bbox.max[1]) / 2, b.bbox.max[2]]);
+        // Mitte der vorderen Randkante – nicht der Nahtpunkt bei +X, dort trifft ein Klick nur eine Ecke.
+        return world([(b.bbox.min[0] + b.bbox.max[0]) / 2, b.bbox.min[1], b.bbox.max[2]]);
     };
     const top = c => {
         const b = c.largest();
@@ -201,9 +202,10 @@
             {
                 kind: 'learn',
                 title: 'Der verdächtige Stift',
-                text: '<p>Ein neuer Fall: Steckt ein Stift <b>in der Wand</b> fest? Bau dafür einen Stift: ' +
+                text: '<p>Ein neuer Fall: Steckt ein Stift <b>in der Wand</b> fest? Schalte zuerst den Schnitt mit dem ' +
+                    '<b>×</b> am Schild aus. Dann bau einen Stift: ' +
                     'Wechsle ins Register <b>Modell</b>, starte eine <b>Neue Skizze</b> auf der <b>Vorderebene</b> und zeichne ' +
-                    'einen kleinen <b>Kreis</b> (etwa <b>8 mm</b>) mitten über den Becher, ungefähr auf halber Höhe.</p>' +
+                    'einen kleinen <b>Kreis</b> (etwa <b>8 mm</b>) mitten <b>auf</b> den Becher, ungefähr auf halber Höhe (etwa 40 mm über dem Boden).</p>' +
                     '<p>Extrudiere ihn <b>80 mm</b>: Stell die <b>Richtung</b> auf <b>Symmetrisch</b> und die ' +
                     '<b>Operation</b> auf <b>Neuer Körper</b>. Jetzt geht der Stift quer durch den Becher.</p>' +
                     '<p>Dann zurück ins Register <b>Prüfen</b>: Klicke auf <b>Eingriff</b> und auf <b>Berechnen</b>. ' +
@@ -215,10 +217,12 @@
                     {text: 'Berechne die Überschneidungen', check: interfComputed}
                 ],
                 hints: [
+                    {target: 'handle:viewport_status:Section:inspect.section:close', text: 'Schnitt ausschalten',
+                        done: c => !sectionOn(c) || newBody(c)},
                     tabHint('MODEL', 'Klicke auf das Register „Modell“', c => c.has('toolbar:sketch.create') || c.inSketch() || newBody(c)),
                     ...sketchHints({plane: 'plane:XZ', planeText: 'Klicke auf die Vorderebene',
                         tool: 'tool:sketch.circle.center', toolText: 'Klicke auf „Kreis“',
-                        drawText: 'Kleiner Kreis über dem Becher', done: newBody}),
+                        drawText: 'Kleiner Kreis mitten auf dem Becher', done: newBody}),
                     ...extrudeHints({pickText: 'Klicke in den Kreis', field: 'dialog:Operation',
                         text: '„Symmetrisch“, „Neuer Körper“, 80, OK', done: newBody}),
                     tabHint('INSPECT', 'Klicke auf das Register „Prüfen“', c => interfOpen(c) || interfComputed(c)),
@@ -270,18 +274,18 @@
                 title: 'Deine Lieblingsansicht',
                 text: '<p>Dreh deinen Becher so, dass er richtig gut aussieht. Diese Ansicht kannst du dir <b>merken</b> – ' +
                     'als <b>benannte Ansicht</b>.</p>' +
-                    '<p>Im Register <b>Ansicht</b> gibt es dafür <b>Ansicht speichern</b> und <b>Ansicht wiederherstellen</b>. ' +
-                    'Zeigen die Knöpfe eine Fehlermeldung, nimm den Weg über den <b>Browser</b> links – der klappt immer:</p>' +
+                    '<p>Das geht am einfachsten links im <b>Browser</b>:</p>' +
                     '<ul><li><b>Rechtsklick</b> auf <b>Benannte Ansichten</b> → <b>Neue benannte Ansicht</b></li>' +
                     '<li>Dreh die Ansicht weg</li>' +
-                    '<li><b>Rechtsklick</b> auf deine neue Ansicht → <b>Wiederherstellen</b>: Zack, du schaust wieder genau wie vorher.</li></ul>',
+                    '<li><b>Rechtsklick</b> auf deine neue Ansicht → <b>Wiederherstellen</b>: Zack, du schaust wieder genau wie vorher.</li></ul>' +
+                    '<p>Im Register <b>Ansicht</b> gibt es dafür auch <b>Ansicht speichern</b> und <b>Ansicht wiederherstellen</b> – ' +
+                    'in der Web-Version zeigen sie aber im Moment oft eine Fehlermeldung.</p>',
                 tasks: [
                     {text: 'Speichere eine benannte Ansicht', check: viewSaved},
                     {text: 'Dreh die Ansicht weg', check: turnedAway},
                     {text: 'Stelle deine Ansicht wieder her', check: restored}
                 ],
                 hints: [
-                    tabHint('VIEW', 'Schau ins Register „Ansicht“', c => viewSaved(c) || c.has('menu:ui.newView')),
                     {target: 'handle:row:Named Views', text: 'Rechtsklick auf „Benannte Ansichten“',
                         done: c => c.has('menu:ui.newView') || viewSaved(c)},
                     {target: 'handle:menu:ui.newView', text: 'Klicke auf „Neue benannte Ansicht“', done: viewSaved},
@@ -354,9 +358,10 @@
                     '<p>At the top of the 3D window there is now a <b>Section</b> label. The <b>×</b> on it turns ' +
                     'the section off again.</p>'},
             {title: 'The suspicious pencil',
-                text: '<p>A new case: is a pencil <b>stuck in the wall</b>? Build a pencil for it: ' +
+                text: '<p>A new case: is a pencil <b>stuck in the wall</b>? First switch the section off with the ' +
+                    '<b>×</b> on its label. Then build a pencil: ' +
                     'switch to the <b>Model</b> tab, start a <b>New Sketch</b> on the <b>front plane</b> and draw ' +
-                    'a small <b>Circle</b> (about <b>8 mm</b>) above the middle of the cup, roughly at half height.</p>' +
+                    'a small <b>Circle</b> (about <b>8 mm</b>) on the middle of the cup, roughly at half height (about 40 mm above the bottom).</p>' +
                     '<p>Extrude it <b>80 mm</b>: set the <b>Direction</b> to <b>Symmetric</b> and the ' +
                     '<b>Operation</b> to <b>New Body</b>. Now the pencil goes right through the cup.</p>' +
                     '<p>Then back to the <b>Inspect</b> tab: click <b>Interference</b> and <b>Compute</b>. ' +
@@ -378,8 +383,7 @@
             {title: 'Your favourite view',
                 text: '<p>Turn your cup so that it looks really good. You can <b>remember</b> this view – ' +
                     'as a <b>named view</b>.</p>' +
-                    '<p>The <b>View</b> tab has <b>Save View</b> and <b>Restore View</b> for that. ' +
-                    'If the buttons show an error message, use the <b>Browser</b> on the left instead – that always works:</p>' +
+                    '<p>The easiest way is the <b>Browser</b> on the left:</p>' +
                     '<ul><li><b>Right-click</b> <b>Named Views</b> → <b>New Named View</b></li>' +
                     '<li>Turn the view away</li>' +
                     '<li><b>Right-click</b> your new view → <b>Restore</b>: zap, you are looking exactly like before.</li></ul>'},
@@ -426,7 +430,8 @@
         'Baue einen Stift als neuen Körper': 'Build a pencil as a new body',
         'Öffne „Eingriff“': 'Open “Interference”',
         'Berechne die Überschneidungen': 'Compute the overlaps',
-        'Kleiner Kreis über dem Becher': 'Small circle above the cup',
+        'Kleiner Kreis mitten auf dem Becher': 'Small circle on the middle of the cup',
+        'Schnitt ausschalten': 'Switch the section off',
         '„Symmetrisch“, „Neuer Körper“, 80, OK': '“Symmetric”, “New Body”, 80, OK',
         'Klicke auf „Eingriff“': 'Click “Interference”',
         'Klicke auf „Berechnen“': 'Click “Compute”',

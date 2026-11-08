@@ -10,8 +10,13 @@
     const baseDone = c => c.newFeatures('BaseFlangeFeature') >= 1;
     const flangeOpen = c => c.dialog() === 'sheet.flange';
     const thicknessChanged = c => !c.inSketch() && c.bodyCount() >= 1 && c.base.height > 0 &&
-        Math.abs(c.height() - c.base.height) >= 0.2;
+        Math.abs(c.height() - c.base.height) >= 0.05;
     const edges = c => c.newFeatures('EdgeFlangeFeature');
+    // Laschen zeigen nach oben: Wer die untere Kante erwischt, biegt nach unten (Körper reicht unter z = 0).
+    const upward = c => {
+        const b = c.largest();
+        return !!(b && b.bbox && b.bbox.min[2] > -1);
+    };
     const hemmed = c => c.newFeatures('HemFeature') >= 1;
     const unfolded = c => c.newFeatures('UnfoldFeature') >= 1;
     const refolded = c => c.newFeatures('RefoldFeature') >= 1;
@@ -67,7 +72,7 @@
                 kind: 'learn',
                 title: 'Die Grundplatte',
                 text: '<p>Öffne oben das Register <b>Blech</b>. Klicke auf <b>Neue Skizze</b>, wähle die Bodenebene ' +
-                    'und zeichne ein <b>Rechteck</b>. Ein guter Vorschlag ist <b>70 × 80 mm</b>. Dann <b>Skizze beenden</b>.</p>' +
+                    'und zeichne ein <b>Rechteck</b>. Ein guter Vorschlag ist <b>70 × 40 mm</b> (70 breit, 40 tief). Dann <b>Skizze beenden</b>.</p>' +
                     '<p>Jetzt kommt das erste Blech-Werkzeug: <b>Flansch</b>. Ein Flansch ist ein Stück Blech. ' +
                     'Klicke in dein Rechteck – SolidCraft macht daraus eine <b>Basislasche</b>, also eine flache Blechplatte. ' +
                     'Wie dick sie wird, musst du nicht eintippen: Das regelt die Blechregel. Klicke auf <b>OK</b>.</p>',
@@ -109,15 +114,15 @@
                 kind: 'learn',
                 title: 'Lehne und Auflage',
                 text: '<p>Jetzt biegst du Kanten hoch. Klicke wieder auf <b>Flansch</b>, aber diesmal auf die ' +
-                    '<b>hintere Kante</b> der Platte. Jetzt heißt der Flansch <b>Kantenlasche</b>.</p>' +
+                    '<b>obere hintere Kante</b> der Platte (oben, sonst biegt die Lasche nach unten). Jetzt heißt der Flansch <b>Kantenlasche</b>.</p>' +
                     '<ul><li>Die <b>Lehne</b>: <b>Höhe</b> etwa <b>80 mm</b>, <b>Winkel</b> etwa <b>70°</b> – ' +
                     'dann lehnt sie etwas nach hinten. Dann <b>OK</b>.</li>' +
                     '<li>Die <b>Auflage</b>: Noch ein <b>Flansch</b>, jetzt an der <b>vorderen Kante</b>, ' +
                     '<b>Höhe</b> etwa <b>15 mm</b> und <b>90°</b>. Daran rutscht dein Handy nicht herunter.</li></ul>' +
                     '<p>Siehst du die runde Stelle an jeder Biegung? Echtes Blech knickt nie ganz spitz.</p>',
                 tasks: [
-                    {text: 'Biege die Lehne hoch', check: c => edges(c) >= 1},
-                    {text: 'Biege die Auflage hoch', check: c => edges(c) >= 2}
+                    {text: 'Biege die Lehne hoch', check: c => edges(c) >= 1 && upward(c)},
+                    {text: 'Biege die Auflage hoch', check: c => edges(c) >= 2 && upward(c)}
                 ],
                 hints: [
                     {target: 'tool:sheet.flange', text: 'Klicke auf „Flansch“', done: c => flangeOpen(c) || edges(c) >= 1},
@@ -235,7 +240,7 @@
                     '<p>At the end you print your stand on a 3D printer.</p>'},
             {title: 'The base plate',
                 text: '<p>Open the <b>Sheet Metal</b> tab at the top. Click <b>New Sketch</b>, choose the ground plane ' +
-                    'and draw a <b>Rectangle</b>. A good suggestion is <b>70 × 80 mm</b>. Then <b>Finish Sketch</b>.</p>' +
+                    'and draw a <b>Rectangle</b>. A good suggestion is <b>70 × 40 mm</b> (70 wide, 40 deep). Then <b>Finish Sketch</b>.</p>' +
                     '<p>Now the first sheet metal tool: <b>Flange</b>. A flange is a piece of sheet metal. ' +
                     'Click inside your rectangle – SolidCraft turns it into a <b>base</b> flange, a flat metal plate. ' +
                     'You don’t type its thickness: the sheet metal rule takes care of that. Click <b>OK</b>.</p>'},
@@ -247,8 +252,8 @@
                     '<p>The rules hold more, for example the <b>Bend Radius</b>: how round a bend is on the inside. ' +
                     'It says “Thickness” – so the radius is as big as the thickness.</p>'},
             {title: 'Backrest and lip',
-                text: '<p>Now you bend edges up. Click <b>Flange</b> again, but this time click the <b>back edge</b> ' +
-                    'of the plate. Now the flange is an <b>Edge</b> flange.</p>' +
+                text: '<p>Now you bend edges up. Click <b>Flange</b> again, but this time click the <b>top back edge</b> ' +
+                    'of the plate (the top one – otherwise the flange bends down). Now the flange is an <b>Edge</b> flange.</p>' +
                     '<ul><li>The <b>backrest</b>: <b>Height</b> about <b>80 mm</b>, <b>Angle</b> about <b>70°</b> – ' +
                     'so it leans back a little. Then <b>OK</b>.</li>' +
                     '<li>The <b>lip</b>: one more <b>Flange</b>, now on the <b>front edge</b>, <b>Height</b> about ' +

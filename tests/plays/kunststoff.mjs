@@ -18,5 +18,18 @@ export default {
         await ex('solid.extrude', {distance: 2, operation: 'new_body'});
     },
     7: ({ex, bodies}) => bodies().then(names => ex('plastic.snap_fit', {position: [70, 17, 2], hook: [0, 1, 0], length: 12,
-        thickness: 1.5, width: 6, catch_depth: 1, catch_length: 2, body: names[names.length - 1]}))
+        thickness: 1.5, width: 6, catch_depth: 1, catch_length: 2, body: names[names.length - 1]})),
+    // Fenster 7 × 3 mm in die vordere Außenwand (y = -20), Oberkante 8 mm unter dem Rand (z 19,5 … 22,5).
+    8: async ({ex}) => {
+        await ex('sketch.create', {plane: {face: [0, -20, 15]}});
+        const {plane} = await ex('sketch.inspect', {});
+        const uv = w => {
+            const d = w.map((v, i) => v - plane.origin[i]);
+            const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+            return [dot(d, plane.x_dir), dot(d, plane.y_dir)];
+        };
+        await ex('sketch.rectangle.two_point', {p0: uv([-3.5, -20, 19.5]), p1: uv([3.5, -20, 22.5])});
+        await ex('sketch.finish', {});
+        await ex('solid.extrude', {distance: 2, direction: 'negative', operation: 'cut'});
+    }
 };

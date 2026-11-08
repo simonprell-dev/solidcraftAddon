@@ -60,14 +60,14 @@ Für andere SolidCraft-Sprachen zeigt der Kurs Englisch.
 | 6 | 🚀 Rakete | Ich kenne mich aus | Linie, Drehen, Radiales Muster | 9 |
 | 7 | 📱 Handyständer aus Blech | Ich kenne mich aus | Register **Blech**: Flansch, Blechregeln, Umkantung, Entfalten, Flachmuster, DXF | 10 |
 | 8 | 🏺 Vase aus Flächen | Ich kenne mich aus | Register **Fläche**: Drehen, Verlängern, Dicke vergeben, Loft, Kürzen … | 9 |
-| 9 | 🥡 Dose mit Klick-Deckel | Ich kenne mich aus | **Kunststoff**: Lippe, Ansatz, Auflage, Rastverbindung, Kunststoffregeln | 10 |
+| 9 | 🥡 Dose mit Klick-Deckel | Ich kenne mich aus | **Kunststoff**: Lippe, Ansatz, Auflage, Rastverbindung, Kunststoffregeln | 11 |
 | 10 | 🪑 Mini-Hocker aus Rohren | Ich kenne mich aus | Register **Schweissteile**: Rahmenelement, Profile, Parameter | 10 |
 | 11 | 🌬️ Windrad | Ich kenne mich aus | **Zusammenbau** und **Einfügen**: Komponenten, Boden, Gelenk, antreiben, Normteile | 10 |
 | 12 | 🔍 Detektiv-Werkstatt | Ich kenne mich aus | **Prüfen** und **Ansicht**: Messen, Schwerpunkt, Schnitt, Eingriff, Zebra, Verlauf, Ansichten | 10 |
 | 13 | 🧱 Baukasten mit Parametern | Ich kenne mich aus | **Verwalten**: Parameter, Konfigurationen, Material, Farbe, Einheiten, Regeln | 9 |
 | 14 | 📸 Fotostudio | Ich kenne mich aus | Arbeitsbereich **Rendern**: Aussehen, Licht, Bildausschnitt, Ausgabe | 10 |
 
-Zusammen 14 Kapitel mit 128 Schritten. Die Stufen starten bei Kapitel 1, 3 bzw. 5 – alle Kapitel bleiben jederzeit erreichbar.
+Zusammen 14 Kapitel mit 129 Schritten. Die Stufen starten bei Kapitel 1, 3 bzw. 5 – alle Kapitel bleiben jederzeit erreichbar.
 Jeder Knopf eines Registers kommt vor: die wichtigen als Lern-Schritt mit Prüfung, die übrigen im Schritt
 „Was die anderen Knöpfe machen“. Animation, Simulation, Fertigung und Zeichnung sind in SolidCraft noch
 als „Geplant“ markiert; das Fotostudio-Kapitel erklärt, wofür sie gedacht sind.

@@ -23,7 +23,16 @@
 
     const madeComponents = c => occs(c).length >= 2 || c.newFeatures('BodyTransferFeature') >= 2;
     const someGrounded = c => occs(c).some(o => o.grounded);
-    const someFree = c => occs(c).some(o => !o.grounded);
+    // Mast = höchster Körper (siehe unten). Er soll fixiert sein, ein anderes Teil (der Rotor) frei.
+    const mastGrounded = c => {
+        const m = mast(c);
+        return !!m && occs(c).some(o => o.grounded && o.bodies.includes(m.name));
+    };
+    const rotorFree = c => {
+        const m = mast(c);
+        return occs(c).some(o => !o.grounded && !(m && o.bodies.includes(m.name)));
+    };
+    const groundedRight = c => mastGrounded(c) && rotorFree(c);
     const jointDone = c => joints(c).some(j => j.type === 'revolute' || j.type === 'cylindrical');
     const oneDof = c => (jointInfo(c).dof || []).some(d => d.dof === 1);
     const driven = c => joints(c).some(j => (j.values || []).some(v => Math.abs(Number(v.value) || 0) >= 1));
@@ -34,9 +43,15 @@
     // ---------- Mast und Rotor ----------
 
     const mastDone = c => !c.inSketch() && c.bodies().some(b => dims(b)[2] >= 40);
+    // Für die Hinweise: Mast steht (auch während schon die Rotor-Skizze offen ist).
+    const mastBuilt = c => c.bodies().some(b => b.bbox && dims(b)[2] >= 40);
     const rotorDone = c => mastDone(c) && c.bodyCount() >= 2;
-    // Zwei neue Skizzen mit Form: erst der Mast, dann der Rotor.
-    const twoDrawn = c => newSketchList(c).filter(s => s.profiles >= 1).length >= 2;
+    // Rotor gezeichnet: Die neueste Skizze (auf der Mastfläche) hat außer dem Flächenumriss noch
+    // Nabe und Flügel – also mindestens 3 Profile. Eine leere Flächenskizze hat nur 1.
+    const twoDrawn = c => {
+        const l = newSketchList(c);
+        return l.length >= 2 && (l[l.length - 1].profiles || 0) >= 3;
+    };
     // Mast = der höchste Körper, Rotor = ein anderer (am liebsten einer, der nicht fixiert ist).
     const mast = c => c.bodies().reduce((a, b) => (!a || dims(b)[2] > dims(a)[2] ? b : a), null);
     const rotor = c => {
@@ -109,8 +124,8 @@
                 hints: [
                     ...sketchHints({plane: 'plane:XY', planeText: 'Klicke auf die Bodenebene',
                         tool: 'tool:sketch.rectangle.two_point', toolText: 'Klicke auf „Rechteck“',
-                        drawText: 'Ein Quadrat, 8 × 8 mm', done: mastDone}),
-                    ...extrudeHints({pickText: 'Klicke in das Quadrat', text: 'Abstand 100, dann OK', done: mastDone}),
+                        drawText: 'Ein Quadrat, 8 × 8 mm', done: mastBuilt}),
+                    ...extrudeHints({pickText: 'Klicke in das Quadrat', text: 'Abstand 100, dann OK', done: mastBuilt}),
                     ...sketchHints({plane: mastFront, planeText: 'Klicke vorne oben auf den Mast',
                         tool: 'tool:sketch.circle.center', toolText: 'Klicke auf „Kreis“', drawn: twoDrawn,
                         drawText: 'Nabe und zwei Flügel zeichnen', done: rotorDone}),
@@ -148,14 +163,17 @@
                     '<p>So änderst du es: Klicke ein Bauteil an und dann auf <b>Boden</b>. Ein zweiter Klick löst es wieder. ' +
                     'Am Ende soll der <b>Mast</b> die Stecknadel haben und der <b>Rotor frei</b> sein.</p>',
                 tasks: [
-                    {text: 'Ein Bauteil ist fixiert (Stecknadel)', check: someGrounded},
-                    {text: 'Der Rotor ist frei', check: c => someGrounded(c) && someFree(c)}
+                    {text: 'Der Mast ist fixiert (Stecknadel)', check: mastGrounded},
+                    {text: 'Der Rotor ist frei', check: groundedRight}
                 ],
                 hints: [
-                    tabHint('ASSEMBLE', 'Zusammenbau', 'toolbar:occurrence.ground', () => false),
+                    tabHint('ASSEMBLE', 'Zusammenbau', 'toolbar:occurrence.ground', groundedRight),
                     {target: mastTarget, text: 'Klicke den Mast an',
-                        done: c => (someGrounded(c) && someFree(c)) || ((c.doc().selection || []).length > 0)},
-                    {target: 'tool:occurrence.ground', text: '„Boden“: fixieren oder lösen', done: c => joints(c).length > 0}
+                        done: c => groundedRight(c) || ((c.doc().selection || []).length > 0)},
+                    {target: 'tool:occurrence.ground', text: '„Boden“: fixieren oder lösen', done: groundedRight},
+                    // Meist hat SolidCraft den Mast schon selbst fixiert – dann zeigt die Hand trotzdem, wo „Boden“ ist.
+                    {target: c => (c.has('toolbar:occurrence.ground') ? 'tool:occurrence.ground' : 'tab:ASSEMBLE'),
+                        text: 'Unter „Zusammenbau“: „Boden“ fixiert oder löst ein Bauteil', done: () => false}
                 ]
             },
             {
@@ -214,7 +232,8 @@
                     '<p>Öffne das Register <b>Einfügen</b> und klicke auf <b>Verbindungselement einfügen</b> ' +
                     '(der Knopf mit der Schraube). Wähle bei <b>Typ</b> zum Beispiel eine <b>Sechskantmutter</b> oder eine ' +
                     '<b>Zylinderschraube</b>, dann die <b>Größe</b> und klicke auf <b>OK</b>. ' +
-                    'Klickst du vorher auf ein Loch, setzt sich die Schraube gleich hinein – sonst landet sie am Nullpunkt.</p>' +
+                    'Klickst du vorher auf ein Loch, setzt sich die Schraube gleich hinein – sonst landet sie am Nullpunkt, ' +
+                    'also mitten im Mast! Schieb sie danach mit <b>Verschieben</b> (Register Zusammenbau) zur Seite, damit du sie siehst.</p>' +
                     '<p>Der Knopf <b>Teile</b> öffnet dieselbe Bibliothek mit allen Standardbauteilen, auch Unterlegscheiben, Stifte und Kugellager. ' +
                     'Mit <b>Bauteilgröße ändern</b> machst du eine eingefügte Schraube später länger oder dicker.</p>',
                 tasks: [{text: 'Ein Normteil eingefügt', check: screwDone}],
@@ -254,7 +273,7 @@
                 kind: 'challenge',
                 title: 'Challenge: Windrad in Bewegung',
                 autoHints: false,
-                text: '<ul><li>Klicke auf <b>Bewegungsuntersuchung</b>, füge mit <b>Schlüssel hinzufügen</b> eine Drehung hinzu ' +
+                text: '<ul><li>Klicke auf <b>Bewegungsuntersuchung</b>, füge für dein Gelenk einen <b>Schlüssel</b> hinzu (eine Drehung) ' +
                     'und spiel deinen Rotor wie einen Film ab.</li>' +
                     '<li>Zeichne mit <b>Bewegungsbahn</b> den Kreis, den eine Flügelspitze fährt.</li>' +
                     '<li>Bau ein Windrad mit <b>drei</b> oder <b>vier</b> Flügeln.</li>' +
@@ -322,7 +341,8 @@
                     'the same everywhere in the world. SolidCraft has a whole library of them.</p>' +
                     '<p>Open the <b>Insert</b> tab and click <b>Fastener</b> (the button with the screw). ' +
                     'Under <b>Type</b> choose for example a <b>Hex nut</b> or a <b>Socket head cap screw</b>, then the <b>Size</b>, and click <b>OK</b>. ' +
-                    'If you click a hole first, the screw sits right in it – otherwise it lands at the origin.</p>' +
+                    'If you click a hole first, the screw sits right in it – otherwise it lands at the origin, ' +
+                    'right inside the mast! Then push it aside with <b>Move</b> (Assemble tab) so you can see it.</p>' +
                     '<p>The <b>Parts</b> button opens the same library with all standard parts, including washers, pins and ball bearings. ' +
                     'With <b>Resize Part</b> you can later make an inserted screw longer or thicker.</p>'},
             {title: 'What the other buttons do',
@@ -348,7 +368,7 @@
                     '<li><b>Update Links</b>: reloads inserted designs when you’ve changed them. ' +
                     '<b>Break Link</b>: the part forgets its original file.</li></ul>'},
             {title: 'Challenge: wind turbine in motion',
-                text: '<ul><li>Click <b>Motion Study</b>, add a <b>key</b> for your joint ' +
+                text: '<ul><li>Click <b>Motion Study</b>, add a <b>key</b> for your joint (a rotation) ' +
                     'and play your rotor like a film.</li>' +
                     '<li>Use <b>Motion Trace</b> to draw the circle a blade tip travels.</li>' +
                     '<li>Build a wind turbine with <b>three</b> or <b>four</b> blades.</li>' +
@@ -373,7 +393,8 @@
         'Klicke auf „Aus Körpern“': 'Click “From Bodies”',
         'Mast und Rotor wählen': 'Choose mast and rotor',
         'Dann OK': 'Then OK',
-        'Ein Bauteil ist fixiert (Stecknadel)': 'One part is grounded (pin)',
+        'Der Mast ist fixiert (Stecknadel)': 'The mast is grounded (pin)',
+        'Unter „Zusammenbau“: „Boden“ fixiert oder löst ein Bauteil': 'Under “Assemble”: “Ground” fixes or frees a part',
         'Der Rotor ist frei': 'The rotor is free',
         'Klicke den Mast an': 'Click the mast',
         '„Boden“: fixieren oder lösen': '“Ground”: fix or free',

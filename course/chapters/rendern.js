@@ -25,6 +25,14 @@
     const faceLook = c => (looks(c).faces || []).length > 0;
     const pickBodies = c => !!((c.ui() && c.ui().ui) || {}).pickBodies;
     const methodChanged = c => !!R(c).method && R(c).method !== 'raster';
+    // Einmal ausprobiert bleibt ausprobiert – auch wenn das Kind danach (wie empfohlen) zurückstellt.
+    const memo = new WeakMap();
+    const methodTried = c => {
+        let m = memo.get(c.base);
+        if (!m) memo.set(c.base, m = {});
+        if (methodChanged(c)) m.tried = true;
+        return !!m.tried;
+    };
     const perspective = c => ((c.ui() && c.ui().camera) || {}).fov > 0;
     const started = c => !!R(c).job || (R(c).results || []).length > 0;
     const rendered = c => (R(c).results || []).length > 0;
@@ -122,9 +130,9 @@
                 text: '<p>Jetzt bekommt dein Modell ein Material – zum Beispiel <b>Gold</b> oder <b>Holz</b>. ' +
                     'So ein Material heißt hier <b>Erscheinungsbild</b>.</p>' +
                     '<p>Klicke in der Leiste <b>Auswahl</b> auf <b>Körper</b>. Tippe links unten ins Suchfeld ' +
-                    '<b>Gold</b> oder <b>Holz</b>. Klicke auf eine Kachel und dann auf dein Modell. ' +
+                    '<b>Gold</b> oder <b>Wood</b> ein – die Bibliothek ist englisch, Holz heißt dort <b>Wood</b>. Klicke auf eine Kachel und dann auf dein Modell. ' +
                     'Mit <b>Fertig</b> hörst du auf zu malen.</p>' +
-                    '<p>Danach wählst du <b>Fläche</b>: Jetzt färbst du nur eine einzelne Seite, zum Beispiel die Oberseite in Holz.</p>' +
+                    '<p>Danach wählst du <b>Fläche</b>: Jetzt färbst du nur eine einzelne Seite, zum Beispiel die Oberseite in Holz (<b>Wood</b>).</p>' +
                     '<p>Die anderen Knöpfe: <b>Komponente</b> färbt ein ganzes Bauteil. Mit <b>Aufmalen</b> pinselst du ein ' +
                     'Erscheinungsbild auf viele Stellen nacheinander. <b>Aufnehmen</b> ist eine Pipette: Du klickst auf etwas ' +
                     'und nimmst sein Aussehen auf. Über der Kachelliste filterst du mit <b>Im Design</b>, <b>Bibliothek</b>, ' +
@@ -164,15 +172,15 @@
                     '<p>Tipp: Für dein erstes Foto stellst du die Methode danach wieder auf <b>CPU-Rasterung</b> – das geht am schnellsten.</p>',
                 tasks: [
                     {text: 'Öffne die Phase „Licht“', check: c => stage(c) === 'light'},
-                    {text: 'Probiere eine andere Methode aus', check: methodChanged},
+                    {text: 'Probiere eine andere Methode aus', check: methodTried},
                     {text: 'Ich habe eine Lampe aus- und wieder angeschaltet', manual: true}
                 ],
                 hints: [
                     {target: 'handle:render:stage:light', text: 'Klicke auf „Licht“',
-                        done: c => stage(c) === 'light' || methodChanged(c)},
+                        done: c => stage(c) === 'light' || methodTried(c)},
                     {target: 'handle:render:method', text: 'Klicke bei „Methode“',
-                        done: c => c.has('render:method-cpu') || methodChanged(c)},
-                    {target: 'handle:render:method-cpu', text: 'Wähle „CPU-Raytracing“', done: methodChanged},
+                        done: c => c.has('render:method-cpu') || methodTried(c)},
+                    {target: 'handle:render:method-cpu', text: 'Wähle „CPU-Raytracing“', done: methodTried},
                     {target: 'handle:render:tree:light:1:mute', text: 'Auge: Lampe aus und an', done: () => false}
                 ]
             },

@@ -12,8 +12,13 @@
     const memberOpen = c => c.dialog() === 'frame.member';
     const members = c => c.newFeatures('FrameMemberFeature');
     const memberDone = c => !c.inSketch() && members(c) >= 1;
+    // Alle Linien haben ein Rohr: Ein „П“ hat 3 Linien, der Ring 4 – jede Linie wird ein eigener Körper.
+    const memberAll = c => memberDone(c) && c.bodyCount() >= c.base.bodyCount + 3;
     const linesDrawn = n => c => newSketchList(c).some(s => (s.curves || 0) >= n);
-    const resized = c => !c.inSketch() && c.base.volume > 0 && Math.abs(c.volume() - c.base.volume) > c.base.volume * 0.1;
+    // Rohre wirklich umgebaut: noch Volumen da (zu dünn → Wand passt nicht → alle Körper weg) und
+    // mehr als 10 % anders als vorher.
+    const resized = c => !c.inSketch() && c.volume() > 0 && c.base.volume > 0 &&
+        Math.abs(c.volume() - c.base.volume) > c.base.volume * 0.1;
 
     // Eine Linie der neuesten Skizze. Ein stehendes „П“ (Füße auf dem Boden): der obere Balken liegt doppelt
     // so hoch wie die Skizzenmitte. Ein liegender Ring: die rechte Seite des Gestells.
@@ -21,16 +26,28 @@
         const p = c.sketchCenter();
         if (!p) return 'viewport';
         if (Math.abs(p[2]) > 1) return world([p[0], p[1], 2 * p[2]]);
+        // Liegender Ring: auf der rechten Ringlinie, zwischen zwei Füßen (nicht auf dem Fußrohr).
+        const right = c.bodies().filter(b => b.bbox).reduce((a, b) => (!a || b.bbox.max[0] > a.bbox.max[0] ? b : a), null);
+        return right ? world([(right.bbox.min[0] + right.bbox.max[0]) / 2, p[1] + 15, p[2]]) : world(p);
+    };
+    // Zweites „П“: Oben in der Mitte kreuzt es das erste Rahmenrohr – dort träfe ein Klick das Rohr.
+    // Deshalb ein Stück weiter entlang der neuen Linie zeigen.
+    const secondLineTarget = c => {
+        const p = c.sketchCenter();
+        if (!p) return 'viewport';
         const xs = c.bodies().filter(b => b.bbox).map(b => b.bbox.max[0]);
-        return world([xs.length ? Math.max(...xs) : p[0], p[1], p[2]]);
+        const w = xs.length ? Math.max(...xs) : 30;
+        return world([p[0], p[1] + w / 2, 2 * p[2]]);
     };
 
-    const memberHints = ({pickText, field = 'dialog:Width', fieldText}) => [
+    const memberHints = ({pickText, field = 'dialog:Width', fieldText, target = lineTarget}) => [
         {target: 'tool:frame.member', text: 'Klicke auf „Rahmenelement“', done: c => memberOpen(c) || memberDone(c)},
         {target: 'handle:nav:slot:fit', text: 'Hier: alles ins Bild holen',
             done: c => c.cameraMoved() || c.dialogPicked('Lines') > 0 || memberDone(c)},
-        {target: lineTarget, text: pickText, done: c => c.dialogPicked('Lines') > 0 || memberDone(c)},
-        {target: field, text: fieldText, done: memberDone}
+        {target, text: pickText, done: c => c.dialogPicked('Lines') > 0 || memberDone(c)},
+        {target: field, text: fieldText, done: memberDone},
+        // Nur eine Linie erwischt? Dann fehlen Rohre – nochmal mit „Alle Linien“.
+        {target: 'tool:frame.member', text: 'Fehlen Rohre? Nochmal mit „Alle Linien“', done: c => memberAll(c) || memberOpen(c)}
     ];
 
     K.add({
@@ -100,7 +117,7 @@
                     'Bei <b>Wand</b> (so dick ist das Metall) passen <b>1,5 mm</b>. Dann <b>OK</b>.</p>' +
                     '<p>Jedes Rohr ist jetzt ein eigener Körper – genau wie in der Werkstatt, bevor geschweißt wird.</p>',
                 tasks: [
-                    {text: 'Lege Rohre auf die Linien', check: memberDone}
+                    {text: 'Lege Rohre auf die Linien', check: memberAll}
                 ],
                 hints: memberHints({pickText: 'Klicke auf eine Linie', fieldText: 'Breite und Höhe: rohr, dann OK'})
             },
@@ -113,13 +130,14 @@
                     '<b>Wand</b> 1,5 mm, <b>OK</b>.</p>',
                 tasks: [
                     {text: 'Zeichne das zweite „П“', check: c => linesDrawn(3)(c) || memberDone(c)},
-                    {text: 'Mach Rohre daraus', check: memberDone}
+                    {text: 'Mach Rohre daraus', check: memberAll}
                 ],
                 hints: [
                     ...sketchHints({plane: 'plane:YZ', planeText: 'Klicke auf die Seitenebene',
                         tool: 'tool:sketch.line', toolText: 'Klicke auf „Linie“', drawText: 'Zeichne ein „П“ aus drei Linien',
                         drawn: linesDrawn(3), done: memberDone}),
-                    ...memberHints({pickText: 'Klicke auf eine Linie', fieldText: 'Breite und Höhe: rohr, dann OK'})
+                    ...memberHints({pickText: 'Klicke auf eine Linie', fieldText: 'Breite und Höhe: rohr, dann OK',
+                        target: secondLineTarget})
                 ]
             },
             {
@@ -132,7 +150,7 @@
                     'und tippe beim <b>Durchmesser</b> <b>rohr</b> ein, <b>Wand</b> 1,5 mm.</p>',
                 tasks: [
                     {text: 'Zeichne den Ring', check: c => newSketchList(c).some(s => s.profiles >= 1) || memberDone(c)},
-                    {text: 'Mach Rohre daraus', check: memberDone}
+                    {text: 'Mach Rohre daraus', check: memberAll}
                 ],
                 hints: [
                     ...sketchHints({plane: 'plane:XY', planeText: 'Klicke auf die Bodenebene',
@@ -146,7 +164,8 @@
                 title: 'Alle Rohre auf einmal ändern',
                 text: '<p>Jetzt zeigt der Parameter, was er kann. Öffne wieder <b>Parameter</b> und ändere bei <b>rohr</b> ' +
                     'den <b>Ausdruck</b> auf <b>8 mm</b>. Drücke die <b>Eingabetaste</b>.</p>' +
-                    '<p>Schau hin: <b>Alle</b> Rohre werden auf einmal dicker! Dünner geht natürlich auch. ' +
+                    '<p>Schau hin: <b>Alle</b> Rohre werden auf einmal dicker! Dünner geht auch – aber nicht unter 4 mm, ' +
+                    'sonst passt die Wand von 1,5 mm nicht mehr hinein und die Rohre verschwinden. ' +
                     'Für den 3D-Drucker sollten die Rohre aber mindestens 5 mm dick sein.</p>',
                 tasks: [
                     {text: 'Ändere den Parameter „rohr“', check: resized}
@@ -238,7 +257,8 @@
             {title: 'Change all tubes at once',
                 text: '<p>Now the parameter shows what it can do. Open <b>Parameters</b> again and change the ' +
                     '<b>Expression</b> of <b>tube</b> to <b>8 mm</b>. Press <b>Enter</b>.</p>' +
-                    '<p>Look: <b>all</b> tubes get thicker at once! Thinner works too, of course. ' +
+                    '<p>Look: <b>all</b> tubes get thicker at once! Thinner works too – but not below 4 mm, ' +
+                    'otherwise the 1.5 mm wall no longer fits inside and the tubes disappear. ' +
                     'For the 3D printer the tubes should be at least 5 mm thick, though.</p>'},
             {title: 'What the other buttons do',
                 text: '<p>In the <b>Weldments</b> tab you now know <b>New Sketch</b>, <b>Frame Member</b> and ' +
@@ -278,6 +298,7 @@
         'Lege Rohre auf die Linien': 'Put tubes on the lines',
         'Klicke auf „Rahmenelement“': 'Click “Frame Member”',
         'Klicke auf eine Linie': 'Click a line',
+        'Fehlen Rohre? Nochmal mit „Alle Linien“': 'Tubes missing? Again with “All Lines”',
         'Hier: alles ins Bild holen': 'Here: fit everything into view',
         'Breite und Höhe: rohr, dann OK': 'Width and Height: tube, then OK',
         'Zeichne das zweite „П“': 'Draw the second “П”',

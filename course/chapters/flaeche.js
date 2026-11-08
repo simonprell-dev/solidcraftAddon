@@ -12,6 +12,17 @@
     // Offene Profillinie: mindestens drei Linien in einer neuen Skizze (ohne geschlossenes Profil ok).
     const lineDrawn = c => newSketchList(c).some(s => (s.curves || 0) >= 3);
     const lineDone = c => lineDrawn(c) && !c.inSketch();
+    // Ecken abgerundet? SolidCraft kann einer Fläche mit spitzen Innenecken keine Wand geben
+    // („thickening into an inside corner across a sharp edge“). Gemerkt pro Schritt.
+    const memo = new WeakMap();
+    const seen = (c, key, cond) => {
+        let m = memo.get(c.base);
+        if (!m) memo.set(c.base, m = {});
+        if (cond) m[key] = true;
+        return !!m[key];
+    };
+    const filletOpen = c => c.dialog() === 'sketch.fillet' || c.tool() === 'sketch.fillet';
+    const filletTool = c => seen(c, 'fillet', filletOpen(c));
     const revolveOpen = c => c.dialog() === 'surface.revolve';
     const surfaceMade = c => c.newFeatures('SurfaceRevolveFeature') >= 1 || c.newFeatures('SurfaceLoftFeature') >= 1;
     const extendOpen = c => c.dialog() === 'surface.extend';
@@ -50,10 +61,13 @@
                     'vom <b>Nullpunkt</b> 25 mm nach rechts (das wird der Boden), dann nach oben – ' +
                     'erst etwas breiter, dann schmaler wie ein Hals, ganz oben wieder etwas breiter. ' +
                     'Ein guter Vorschlag ist eine Höhe von <b>100 mm</b>.</p>' +
-                    '<p>Wichtig: Die Linie bleibt <b>offen</b>. Du gehst <b>nicht</b> zurück zum Start! ' +
-                    'Drücke am Ende <b>Esc</b> und klicke auf <b>Skizze beenden</b>.</p>',
+                    '<p>Wichtig: Die Linie bleibt <b>offen</b>. Du gehst <b>nicht</b> zurück zum Start! Drücke am Ende <b>Esc</b>.</p>' +
+                    '<p>Jetzt runde die <b>Ecken</b> ab: Wähle <b>Vollrundung</b> (in der Skizze bei <b>Ändern</b>), klicke ' +
+                    'nacheinander jede Ecke deiner Linie an, tippe als Radius <b>8</b> ein und klicke auf <b>OK</b>. Das ist wichtig – an spitzen ' +
+                    'Ecken kann SolidCraft der Vase später keine Wand geben. Danach klicke auf <b>Skizze beenden</b>.</p>',
                 tasks: [
                     {text: 'Zeichne die offene Profillinie', check: lineDrawn},
+                    {text: 'Runde die Ecken mit „Vollrundung“ ab', check: c => filletTool(c)},
                     {text: 'Beende die Skizze', check: lineDone}
                 ],
                 hints: [
@@ -65,6 +79,9 @@
                     {target: 'tool:sketch.line', text: 'Klicke auf „Linie“',
                         done: c => (c.tool() || '').startsWith('sketch.line') || lineDrawn(c)},
                     {target: 'viewport', text: 'Punkt für Punkt, nicht schließen', done: lineDrawn},
+                    {target: 'tool:sketch.fillet', text: 'Klicke auf „Vollrundung“', done: c => filletTool(c) || lineDone(c)},
+                    {target: 'dialog:Corners', text: 'Jede Ecke anklicken, Radius 8, OK',
+                        done: c => !c.inSketch() || (!filletOpen(c) && filletTool(c))},
                     {target: 'tool:sketch.finish', text: 'Klicke auf „Skizze beenden“', done: lineDone}
                 ]
             },
@@ -129,7 +146,8 @@
                     'Bei <b>Operation</b> steht <b>Neuer Körper</b>. Klicke auf <b>OK</b>.</p>' +
                     '<p>Jetzt ist aus der Fläche ein <b>Volumenkörper</b> geworden – mit Boden, Wand und Inhalt. ' +
                     'Die dünne Haut bleibt als eigener Eintrag im Browser liegen. Blende sie mit dem <b>Auge</b> aus.</p>' +
-                    '<p>Wächst die Wand nach innen statt nach außen? Dann tippe <b>-2</b> ein.</p>',
+                    '<p>Kommt eine Fehlermeldung? Dann tippe <b>-2</b> ein (die Wand wächst dann zur anderen Seite) oder ' +
+                    'runde die Ecken in der Skizze stärker ab: Doppelklick unten im Verlauf auf die Skizze.</p>',
                 tasks: [
                     {text: 'Wähle „Dicke vergeben“', check: c => thickenOpen(c) || thickened(c)},
                     {text: 'Gib der Vase eine Wand', check: thickened}
@@ -200,8 +218,10 @@
                     'from the <b>origin</b> 25 mm to the right (that becomes the bottom), then upwards – ' +
                     'a bit wider first, then narrower like a neck, and a bit wider again at the very top. ' +
                     'A good suggestion is a height of <b>100 mm</b>.</p>' +
-                    '<p>Important: the line stays <b>open</b>. Do <b>not</b> go back to the start! ' +
-                    'Press <b>Esc</b> at the end and click <b>Finish Sketch</b>.</p>'},
+                    '<p>Important: the line stays <b>open</b>. Do <b>not</b> go back to the start! Press <b>Esc</b> at the end.</p>' +
+                    '<p>Now round off the <b>corners</b>: choose <b>Fillet</b> (in the sketch under <b>Modify</b>), click ' +
+                    'each corner of your line, one after the other, type <b>8</b> as the radius and click <b>OK</b>. That matters – at sharp ' +
+                    'corners SolidCraft can’t give the vase a wall later. Then click <b>Finish Sketch</b>.</p>'},
             {title: 'Revolve the surface',
                 text: '<p>Now the line becomes a surface. In the <b>Surface</b> tab, click <b>Revolve</b>.</p>' +
                     '<p>For <b>Profiles or curves</b>, click your line. As the <b>Axis</b>, choose the blue ' +
@@ -225,7 +245,8 @@
                     'The <b>Operation</b> says <b>New Body</b>. Click <b>OK</b>.</p>' +
                     '<p>Now the surface has become a <b>solid body</b> – with a bottom, a wall and an inside. ' +
                     'The thin skin stays as its own entry in the Browser. Hide it with the <b>eye</b>.</p>' +
-                    '<p>Does the wall grow inwards instead of outwards? Then type <b>-2</b>.</p>'},
+                    '<p>Do you get an error message? Then type <b>-2</b> (the wall grows to the other side) or round ' +
+                    'the corners in the sketch more: double-click the sketch in the timeline at the bottom.</p>'},
             {title: 'What the other buttons do',
                 text: '<p>The <b>Surface</b> tab has even more tools. Almost all of them make <b>surfaces</b>, not bodies:</p>' +
                     '<ul><li><b>New Sketch</b> – like in the Model tab: start a flat drawing.</li>' +
@@ -273,6 +294,9 @@
         'Wähle „Dicke vergeben“': 'Choose “Thicken”',
         'Gib der Vase eine Wand': 'Give the vase a wall',
         'Klicke auf „Dicke vergeben“': 'Click “Thicken”',
+        'Runde die Ecken mit „Vollrundung“ ab': 'Round the corners with “Fillet”',
+        'Klicke auf „Vollrundung“': 'Click “Fillet”',
+        'Jede Ecke anklicken, Radius 8, OK': 'Click each corner, radius 8, OK',
         'Klicke die Vase an': 'Click the vase',
         'Dicke 2, dann OK': 'Thickness 2, then OK'
     });
