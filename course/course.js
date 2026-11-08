@@ -14,6 +14,7 @@
     const T = window.SolidcraftKursTargets;
     const I = window.SolidcraftKursI18n;
     const S = window.SolidcraftKursSpeech;
+    const HF = window.SolidcraftKursHintFlow;
     const t = (key, vars) => I.t(key, vars);
     // Kursinhalte: Quelle (deutsch) und die übersetzte Fassung für die aktuelle Sprache.
     const SRC = window.SolidcraftKursCourse;
@@ -210,9 +211,6 @@
         lastHintKey = '';
     }
 
-    const overlaps = (a, b, gap = 4) => a.left < b.right + gap && a.right > b.left - gap &&
-        a.top < b.bottom + gap && a.bottom > b.top - gap;
-    const fits = r => r.left >= 4 && r.top >= 4 && r.right <= window.innerWidth - 4 && r.bottom <= window.innerHeight - 4;
 
     function placeBubble (text, anchor) {
         const bubble = el('div', 'sk-bubble');
@@ -230,9 +228,21 @@
             new DOMRect(centered, anchor.top - h - 8, w, h)
         ];
         const p = panel && state.open && panel.getBoundingClientRect();
-        const spot = spots.find(r => fits(r) && !(p && overlaps(r, p))) || spots.find(fits) || spots[0];
+        const spot = HF.pickSpot(spots, {width: window.innerWidth, height: window.innerHeight},
+            {rects: p ? [p] : [], points: dialogButtons({x: cx, y: cy})});
         bubble.style.left = `${Math.max(8, Math.min(window.innerWidth - w - 8, spot.left))}px`;
         bubble.style.top = `${Math.max(8, Math.min(window.innerHeight - h - 8, spot.top))}px`;
+    }
+
+    // OK, Abbrechen & Co. im offenen Dialog (Bildschirmpunkte) – die Sprechblase darf sie nicht
+    // verdecken. Zeigt die Hand selbst auf einen davon, bleibt dieser frei wählbar.
+    function dialogButtons (pointedAt) {
+        const handles = run.snap && run.snap.handles;
+        if (!handles) return [];
+        const o = A.canvasOffset();
+        return ['dialog:OK', 'dialog:Cancel', 'dialog:Apply'].map(n => handles.get(n)).filter(Boolean)
+            .map(h => ({x: h.x + o.x, y: h.y + o.y}))
+            .filter(q => Math.hypot(q.x - pointedAt.x, q.y - pointedAt.y) > 30);
     }
 
     // Liegt das Ziel unter dem Kursfenster, rückt das Fenster auf die andere Seite.
@@ -885,11 +895,19 @@
             }
         }
 
-        const hint = activeHint(c);
+        const given = activeHint(c);
+        // Neuer Hinweis → merken, seit wann er steht (für „nach dem Tippen auf OK zeigen“).
+        const givenKey = given ? `${stepId(state.chapter, state.step)}.${currentStep().hints.indexOf(given)}` : '';
+        if (givenKey !== run.hintKey) {
+            run.hintKey = givenKey;
+            run.hintShownAt = Date.now();
+        }
+        const hint = HF.afterTyping(given, {shownAt: run.hintShownAt, typedAt: run.typedAt, now: Date.now(),
+            hasOk: c.has('dialog:OK'), okText: t('hint.ok'), c});
         const target = hint && hintTarget(hint, c);
         const pt = target && await locate(target, hint.text, snap, {search: hint.search});
         // Zwischendurch kann der Schritt gewechselt haben – dann nichts Altes zeichnen.
-        if (pt && state.open && run.view === 'step' && activeHint(c) === hint) drawPoint(pt);
+        if (pt && state.open && run.view === 'step' && activeHint(c) === given) drawPoint(pt);
         else clearOverlay();
     }
 
@@ -949,6 +967,12 @@
     });
 
     // Rechtsklick aufs Erweiterungs-Symbol → „Lernfortschritt zurücksetzen“ (background.js)
+    // Tippen in SolidCraft (nicht im Kursfenster) merken: Danach zeigt die Hand vom Dialogfeld auf „OK“.
+    window.addEventListener('keydown', e => {
+        if (e.target && e.target.closest && e.target.closest('.sk-panel')) return;
+        run.typedAt = Date.now();
+    }, true);
+
     window.addEventListener('solidcraft-kurs-reset', () => {
         reader.stop();
         try {

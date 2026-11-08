@@ -30,6 +30,7 @@ const PAGE_SCRIPTS = {
         'course/targets.js',
         'course/speech.js',
         'course/reader.js',
+        'course/hint-flow.js',
         'course/course-data.js',
         'course/chapters/blech.js',
         'course/chapters/flaeche.js',

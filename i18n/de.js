@@ -21,6 +21,7 @@
             'btn.stopRead': 'Vorlesen beenden',
             'menu.read': 'Vorlesen',
             'read.unavailable': 'Vorlesen geht gerade nicht: Auf diesem Gerät ist keine passende Stimme installiert.',
+            'hint.ok': 'Fertig eingetragen? Dann klicke auf „OK“',
             'read.auto': 'Jeden Schritt automatisch vorlesen',
             'kind.info': 'Info',
             'kind.learn': 'Lernen',

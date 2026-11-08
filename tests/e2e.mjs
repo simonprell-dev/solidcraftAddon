@@ -131,8 +131,49 @@ try {
     const viewportHint = (await bubble()) === 'Klicke in dein Rechteck';
     log(viewportHint || (dist && await ringAt(dist.x, dist.y)), 'Schritt 5: Hand führt durch den Extrudieren-Dialog');
     await shot('schritt5-dialog');
-    await call('ui.key', {key: 'Escape'});
-    await ex('solid.extrude', {distance: 3});
+    // Wie ein Kind: ins Rechteck klicken, Abstand eintippen – dann muss die Hand auf „OK“ springen,
+    // und die Sprechblase darf „OK“ nicht verdecken.
+    const inRect = await call('ui.at', {world: [0, 0, 0]});
+    await call('ui.click', {x: inRect[0], y: inRect[1]});
+    await wait(800);
+    const distField = await handle('dialog:Distance');
+    log(!!distField && await ringAt(distField.x, distField.y), 'Schritt 5: Hand zeigt auf „Abstand“');
+    const cv = await page.evaluate(() => {
+        const r = document.getElementById('solidcraft_canvas').getBoundingClientRect();
+        return {x: r.left, y: r.top};
+    });
+    await page.mouse.click(cv.x + distField.x, cv.y + distField.y);
+    await wait(300);
+    await page.keyboard.down('Control');
+    await page.keyboard.press('KeyA');
+    await page.keyboard.up('Control');
+    await page.keyboard.type('3');
+    await wait(2000);
+    const okBtn = await handle('dialog:OK');
+    log(!!okBtn && await ringAt(okBtn.x, okBtn.y), `Schritt 5: nach dem Tippen zeigt die Hand auf „OK“ („${await bubble()}“)`);
+    const covered = await page.evaluate(({x, y}) => {
+        const b = document.querySelector('.sk-bubble');
+        const c = document.getElementById('solidcraft_canvas').getBoundingClientRect();
+        if (!b) return false;
+        const r = b.getBoundingClientRect();
+        return x + c.left >= r.left && x + c.left <= r.right && y + c.top >= r.top && y + c.top <= r.bottom;
+    }, okBtn || {x: -1, y: -1});
+    const cancelBtn = await handle('dialog:Cancel');
+    const coversCancel = cancelBtn && await page.evaluate(({x, y}) => {
+        const b = document.querySelector('.sk-bubble');
+        const c = document.getElementById('solidcraft_canvas').getBoundingClientRect();
+        const r = b ? b.getBoundingClientRect() : null;
+        return !!r && x + c.left >= r.left && x + c.left <= r.right && y + c.top >= r.top && y + c.top <= r.bottom;
+    }, cancelBtn);
+    log(!covered && !coversCancel, 'Schritt 5: Sprechblase verdeckt weder „OK“ noch „Abbrechen“');
+    await shot('schritt5-ok');
+    await call('ui.click', {x: okBtn.x, y: okBtn.y});
+    await wait(800);
+    const thick = await page.evaluate(() => {
+        const K = window.SolidcraftKurs;
+        return window.SolidcraftKursContext.make(K.run.snap, K.run.base).height();
+    });
+    console.log(`  Dicke nach OK: ${thick} mm`);
     log(await allDone(), 'Schritt 5: Platte 3 mm erkannt');
     await next();
 

@@ -17,6 +17,11 @@
   als cp1252 statt UTF-8 an die Sprachausgabe). Aufträge laufen jetzt über eine UTF-8-Datei, `tts.py` bricht
   bei kaputten Zeichen ab; alle deutschen Aufnahmen neu erzeugt
 
+- Hand bleibt nach dem Ausfüllen eines Dialogfelds nicht mehr dort stehen: Wer getippt hat, wird nach
+  kurzer Pause zu „OK“ geführt („Fertig eingetragen? Dann klicke auf „OK““) – SolidCraft verrät die
+  Feldwerte nicht, daher zählt das Tippen
+- Die Sprechblase verdeckt nie mehr „OK“ oder „Abbrechen“ im Dialog
+
 ### Store
 - Die Erweiterung ist im Chrome Web Store: README und Projektseite verlinken den Eintrag
 
