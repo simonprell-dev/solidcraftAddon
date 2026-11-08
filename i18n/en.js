@@ -11,7 +11,7 @@
         name: 'English',
         labels: {
             tabs: {MODEL: 'Model', SKETCH: 'Sketch', SURFACE: 'Surface', ASSEMBLE: 'Assemble', INSERT: 'Insert',
-                INSPECT: 'Inspect', MANAGE: 'Manage', VIEW: 'View', 'SHEET METAL': 'Sheet Metal', SOLID: 'Solid'},
+                INSPECT: 'Inspect', MANAGE: 'Manage', VIEW: 'View', 'SHEET METAL': 'Sheet Metal', SOLID: 'Solid', WELDMENTS: 'Weldments', PLASTIC: 'Plastic', MESH: 'Mesh', UTILITIES: 'Utilities'},
             panels: {CREATE: 'Create', MODIFY: 'Modify', ARRANGE: 'Arrange', CONSTRUCT: 'Construct',
                 CONFIGURE: 'Configure', CONSTRAIN: 'Constrain', PATTERN: 'Pattern', REFERENCE: 'Reference',
                 INSPECT: 'Inspect'}
